@@ -1,6 +1,7 @@
 import express from "express";
 import db from "./db/index.js";
 import roomsRouter from "./routes/rooms.js";
+import agentsRouter from "./routes/agents.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -12,6 +13,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/rooms", roomsRouter);
+app.use("/agents", agentsRouter);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
