@@ -86,4 +86,12 @@ func (a *Agent) collect() {
 	}
 
 	log.Printf("metricas enviadas com sucesso")
+
+	self, err := collector.CollectSelf()
+	if err != nil {
+		log.Printf("erro ao medir consumo do agente: %v", err)
+		return
+	}
+
+	log.Printf("agente (pid %d) - CPU %.2f%% RAM: %.2fMB", self.PID, self.CPUPercent, self.MemMB)
 }
