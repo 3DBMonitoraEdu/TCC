@@ -53,10 +53,13 @@ func main() {
 
 	fmt.Printf("Configurações carregadas: %+v\n", cfg)
 
-	cpuUsage, err := collector.GetCpuUsage()
+	metrics, err := collector.Collect("/")
 	if err != nil {
-		log.Fatalf("Erro ao obter uso da CPU: %v", err)
+		log.Fatalf("Erro ao obter metricas: %v", err)
 	}
 
-	fmt.Printf("Uso da CPU: %.2f%%\n", cpuUsage)
+	fmt.Printf("Uso da CPU: %.2f%%\n", metrics.CPUPercent)
+	fmt.Printf("RAM: %.2f%% (%d/%d MB)\n", metrics.MemPercent, metrics.MemUsedMB, metrics.MemTotalMB)
+	fmt.Printf("Disco: %.2f%% (%.2f/%.2f GB)\n", metrics.DiskPercent, metrics.DiskUsedGB, metrics.DiskTotalGB)
+	fmt.Printf("Processos encontrados: %d\n", len(metrics.Processes))
 }
