@@ -1,0 +1,8 @@
+{
+  "agent_uuid": "54434a8a-68b9-489a-8fa9-fce1ff0a3d56",
+  "join_code": "W5MA-JWMM",
+  "server_url": "http://localhost:8080",
+  "interval_secs": 30,
+  "disk_path": "/",
+  "blocked_hosts": []
+}
