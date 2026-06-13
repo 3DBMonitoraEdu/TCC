@@ -1,5 +1,9 @@
 import { Router } from "express";
 import { registerAgent, RoomNotFoundError } from "../services/agents.js";
+import {
+  recordMetrics,
+  AgentNotFoundError as MetricsAgentNotFoundError,
+} from "../services/metrics.js";
 
 const router = Router();
 
@@ -20,6 +24,38 @@ router.post("/register", (req, res) => {
 
     console.error("[agents] erro ao registrar agente: ", err);
     res.status(500).json({ error: "erro interno ao registrar agente" });
+  }
+});
+
+router.post("/:agentUuid/metrics", (req, res) => {
+  const { agentUuid } = req.params;
+  const payload = req.body;
+
+  const requiredFields = [
+    "cpuPercent",
+    "memPercent",
+    "memUsedMb",
+    "memTotalMb",
+    "diskPercent",
+    "diskUsedGb",
+    "diskTotalGb",
+  ];
+  const missing = requiredFields.filter((field) => payload[field] === undefined);
+
+  if (missing.length > 0) {
+    return res.status(400).json({ error: `campos obrigatórios faltando: ${missing.join(", ")}` });
+  }
+
+  try {
+    const result = recordMetrics(agentUuid, payload);
+    res.status(201).json(result);
+  } catch (err) {
+    if (err instanceof MetricsAgentNotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+
+    console.error("[agents] erro ao registrar métricas:", err);
+    res.status(500).json({ error: "erro interno ao registrar métricas" });
   }
 });
 
