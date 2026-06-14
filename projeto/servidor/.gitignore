@@ -1,4 +1,8 @@
 node_modules/
 data/*.db
 data/*.db-*i
+data/*.db-shm
+data/*.db-wal
+data/.gitkeep
 .env
+
