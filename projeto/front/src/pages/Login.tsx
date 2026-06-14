@@ -76,7 +76,11 @@ export default function Login() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={loading}
+            >
               <LogIn className="mr-2 h-4 w-4" />
               {loading ? "Entrando..." : "Entrar"}
             </Button>
@@ -92,4 +96,3 @@ export default function Login() {
     </div>
   );
 }
-

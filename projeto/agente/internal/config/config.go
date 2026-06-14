@@ -18,7 +18,7 @@ func Default() Config {
 	return Config{
 		AgentUUID:    "",
 		JoinCode:     "",
-		ServerURL:    "http://localhost:8080",
+		ServerURL:    "http://localhost:4040",
 		IntervalSecs: 30,
 		DiskPath:     "/",
 		BlockedHosts: []string{},

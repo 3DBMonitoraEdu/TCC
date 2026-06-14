@@ -1,6 +1,6 @@
 import { api, setAccessToken } from "./client.js";
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = "http://localhost:4040";
 
 export async function signup({ name, email, password, schoolName }) {
   const response = await fetch(`${BASE_URL}/auth/signup`, {

@@ -62,9 +62,18 @@ export function getAgentMetrics(agentUuid, { limit = 50, offset = 0 } = {}) {
   `)
     .all(agent.id, limit, offset);
 
+  const metricsWithProcesses = metrics.map((metric) => {
+    const processes = db
+      .prepare(`
+      SELECT name, pid, mem_mb FROM processes WHERE metric_id = ? ORDER BY mem_mb DESC LIMIT 50
+    `)
+      .all(metric.id);
+    return { ...metric, processes };
+  });
+
   const total = db
     .prepare("SELECT COUNT(*) as count FROM metrics WHERE agent_id = ?")
     .get(agent.id).count;
 
-  return { agent, metrics, total, limit, offset };
+  return { agent, metrics: metricsWithProcesses, total, limit, offset };
 }

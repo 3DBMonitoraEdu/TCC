@@ -9,7 +9,7 @@ import authRouter from "./routes/auth.js";
 import { requireAuth } from "./middlewares/auth.js";
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 4040;
 
 app.use(
   cors({
@@ -27,11 +27,11 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 app.use("/auth", authRouter);
+app.use("/agents", agentsRouter);
 
 app.use(requireAuth); // as rotas a baixo irão passar pelo middleware requireAuth
 
 app.use("/rooms", roomsRouter);
-app.use("/agents", agentsRouter);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
