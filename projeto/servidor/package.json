@@ -12,7 +12,12 @@
     "dev": "node --watch src/index.js"
   },
   "dependencies": {
+    "argon2": "^0.44.0",
     "better-sqlite3": "^12.10.0",
-    "express": "^5.2.1"
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
   }
 }

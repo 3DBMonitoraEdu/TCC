@@ -1,3 +1,4 @@
 node_modules/
 data/*.db
-data/*.db-*
+data/*.db-*i
+.env

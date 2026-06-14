@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { createRoom } from "../services/rooms.js";
+import { createRoom, getRoomAgents } from "../services/rooms.js";
+import { RoomNotFoundError } from "../services/agents.js";
 
 const router = Router();
 
@@ -16,6 +17,26 @@ router.post("/", (req, res) => {
   } catch (err) {
     console.error("[rooms] erro ao criar sala: ", err);
     res.status(500).json({ error: "erro interno ao criar sala" });
+  }
+});
+
+router.get("/:id/agents", (req, res) => {
+  const roomId = Number(req.params.id);
+
+  if (!Number.isInteger(roomId) || roomId <= 0) {
+    return res.status(400).json({ error: "id da sala inválido" });
+  }
+
+  try {
+    const data = getRoomAgents(roomId);
+    res.json(data);
+  } catch (err) {
+    if (err instanceof RoomNotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+
+    console.error("[rooms] erro ao buscar agentes: ", err);
+    res.status(500).json({ error: "erro interno" });
   }
 });
 

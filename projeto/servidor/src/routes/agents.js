@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerAgent, RoomNotFoundError } from "../services/agents.js";
+import { registerAgent, getAgentMetrics, RoomNotFoundError } from "../services/agents.js";
 import {
   recordMetrics,
   AgentNotFoundError as MetricsAgentNotFoundError,
@@ -56,6 +56,24 @@ router.post("/:agentUuid/metrics", (req, res) => {
 
     console.error("[agents] erro ao registrar métricas:", err);
     res.status(500).json({ error: "erro interno ao registrar métricas" });
+  }
+});
+
+router.get("/:agentUuid/metrics", (req, res) => {
+  const { agentUuid } = req.params;
+  const limit = Math.min(Number(req.query.limit) || 50, 200);
+  const offset = Number(req.query.offset) || 0;
+
+  try {
+    const data = getAgentMetrics(agentUuid, { limit, offset });
+    res.json(data);
+  } catch (err) {
+    if (err instanceof AgentNotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+
+    console.error("[agents] erro ao buscar métricas:", err);
+    res.status(500).json({ error: "erro interno" });
   }
 });
 
