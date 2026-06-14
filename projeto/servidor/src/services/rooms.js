@@ -2,6 +2,8 @@ import crypto from "crypto";
 import db from "../db/index.js";
 import { RoomNotFoundError } from "./agents.js";
 
+export class RoomForbiddenError extends Error {}
+
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 function generateJoinCode() {
@@ -69,4 +71,25 @@ export function getRoomAgents(roomId) {
     .all(roomId);
 
   return { room, agents };
+}
+
+export function getRoomsByTeacher(teacherId) {
+  return db
+    .prepare(`
+    SELECT id, name, join_code, school_id, teacher_id, created_at
+    FROM rooms
+    WHERE teacher_id = ?
+    ORDER BY created_at DESC
+  `)
+    .all(teacherId);
+}
+
+export function deleteRoom(roomId, teacherId) {
+  const room = db.prepare("SELECT id, teacher_id FROM rooms WHERE id = ?").get(roomId);
+
+  if (!room) throw new RoomNotFoundError(`sala não encontrada: ${roomId}`);
+  if (room.teacher_id !== teacherId)
+    throw new RoomForbiddenError("sem permissão para remover esta sala");
+
+  db.prepare("DELETE FROM rooms WHERE id = ?").run(roomId);
 }

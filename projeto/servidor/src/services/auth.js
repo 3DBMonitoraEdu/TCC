@@ -45,12 +45,14 @@ export async function login({ email, password }) {
   `)
     .get(email);
 
-  // Verificamos o hash mesmo se o professor nao existe para evitar timing attacks.
-  const dummyHash = "$argon2id$v=19$m=65536,t=3,p=4$dummy";
-  const passwordHash = teacher?.password_hash ?? dummyHash;
+  if (!teacher) {
+    throw new InvalidCredentialsError("email ou senha inválidos");
+  }
+
+  const passwordHash = teacher?.password_hash;
   const valid = await argon2.verify(passwordHash, password);
 
-  if (!teacher || !valid) {
+  if (!valid) {
     throw new InvalidCredentialsError("email ou senha inválidos");
   }
 

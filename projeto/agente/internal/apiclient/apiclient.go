@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	//"io/ioutil"
 	"net/http"
 	"time"
 
@@ -52,6 +54,8 @@ func (c *Client) Register(req RegisterRequest) (*RegisterResponse, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		// body2, _ := ioutil.ReadAll(resp.Body)
+		// fmt.Printf("resultado %s", string(body2))
 		return nil, fmt.Errorf("servidor retornou status %d ao registrar agente", resp.StatusCode)
 	}
 

@@ -1,7 +1,7 @@
 {
-  "agent_uuid": "d5c6dd15-8509-4539-a45a-91df81d3f7d5",
-  "join_code": "1234",
-  "server_url": "http://localhost:8080",
+  "agent_uuid": "83bb153c-3e49-4a0e-9bda-9d947d813347",
+  "join_code": "UZ94-4AMN",
+  "server_url": "http://localhost:4040",
   "interval_secs": 30,
   "disk_path": "/",
   "blocked_hosts": []
