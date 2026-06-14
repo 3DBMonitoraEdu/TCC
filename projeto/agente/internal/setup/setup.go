@@ -1,14 +1,17 @@
 package setup
 
 import (
-	"bufio"
+
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
 	"github.com/google/uuid"
 
 	"agente/internal/config"
+
+	"github.com/ncruces/zenity"
 )
 
 func IsConfigured(cfg config.Config) bool {
@@ -18,12 +21,16 @@ func IsConfigured(cfg config.Config) bool {
 func Run(cfg config.Config) (config.Config, error) {
 	fmt.Println("===  Configuração inicial do agente ===")
 
-	reader := bufio.NewReader(os.Stdin)
+	joinCode, err := zenity.Entry("Digite o codigo da sala (join_code): ",
+		zenity.Title("Configuração inicial"),
+		zenity.Width(600),
+	)
 
-	fmt.Print("Digite o codigo da sala (join_code): ")
-	joinCode, err := reader.ReadString('\n')
-	if err != nil {
-		return cfg, fmt.Errorf("erro ao ler join_code: %w", err)
+	if err == zenity.ErrCanceled {
+		fmt.Println("user cancelou a operação")
+		return cfg, fmt.Errorf("configuração cancelada pelo usuário")
+	} else if err != nil {
+		log.Fatal(err)
 	}
 	joinCode = strings.TrimSpace(joinCode)
 
