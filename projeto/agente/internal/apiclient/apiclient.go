@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 
 	//"io/ioutil"
 	"net/http"
@@ -70,7 +71,7 @@ func (c *Client) Register(req RegisterRequest) (*RegisterResponse, error) {
 func (c *Client) SendMetrics(AgentUUID string, metrics *collector.Metrics) error {
 	body, err := json.Marshal(metrics)
 	if err != nil {
-		return fmt.Errorf("erro ao serializar metricas: ", err)
+		return fmt.Errorf("erro ao serializar metricas: %w", err)
 	}
 
 	url := fmt.Sprintf("%s/agents/%s/metrics", c.baseURL, AgentUUID)
@@ -79,7 +80,27 @@ func (c *Client) SendMetrics(AgentUUID string, metrics *collector.Metrics) error
 	if err != nil {
 		return fmt.Errorf("erro ao chamar %s: %w", url, err)
 	}
+
 	defer resp.Body.Close()
+
+	var result map[string]interface{}
+
+	respBytes, err := io.ReadAll(resp.Body)
+	res := string(respBytes)
+
+	errJ := json.Unmarshal([]byte(res), &result)
+
+	if errJ != nil {
+		fmt.Printf("Erro ao ler JSON: %v", errJ)
+	}
+
+	if command, ok := result["command"]; ok {
+		if commandFloat, isFloat := command.(float64); isFloat && commandFloat == 0 {
+
+			} else if commandStr, isStr := command.(string); isStr && commandStr != "" {
+			fmt.Printf("COMANDO RECEBIDO DO SERVIDOR: %v\n", commandStr)
+		}
+	}
 
 	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("servidor retornou status %d ao enviar metricas", resp.StatusCode)

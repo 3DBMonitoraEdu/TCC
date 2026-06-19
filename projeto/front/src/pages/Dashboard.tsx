@@ -24,10 +24,12 @@ import {
   LogOut,
   Clock,
   RefreshCw,
+  Lock,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.jsx";
 import { getRooms, createRoom, deleteRoom, getRoomAgents } from "@/api/rooms.ts";
 import { Room, Agent, getAgentStatus } from "@/types/index.ts";
+import { api } from "@/api/client.js";
 
 const STATUS_COLOR = {
   online: "bg-green-500",
@@ -52,6 +54,19 @@ export default function Dashboard() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [blockingPc, setBlockingPc] = useState(false);
+
+  const handleBlockPc = async (agentUuid: string) => {
+    console.log("Bloqueando PC com UUID:", agentUuid);
+    setBlockingPc(true);
+    try {
+      await api.post("/command/createcommand", { agent_uuid: agentUuid, command: "block" });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setBlockingPc(false);
+    }
+  };
 
   const [isAddRoomOpen, setIsAddRoomOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
@@ -404,6 +419,17 @@ export default function Dashboard() {
                     {selectedAgent.collected_at
                       ? new Date(selectedAgent.collected_at).toLocaleString("pt-BR")
                       : "nunca"}
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100">
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleBlockPc(selectedAgent.agent_uuid)}
+                      disabled={blockingPc}
+                    >
+                      <Lock className="mr-2 h-4 w-4" />
+                      {blockingPc ? "Bloqueando..." : "Bloquear Comandos do PC"}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
