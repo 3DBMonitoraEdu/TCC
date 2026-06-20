@@ -7,6 +7,8 @@ import roomsRouter from "./routes/rooms.js";
 import agentsRouter from "./routes/agents.js";
 import authRouter from "./routes/auth.js";
 import { requireAuth } from "./middlewares/auth.js";
+import commandRouter from "./routes/command.js";
+
 
 const app = express();
 const PORT = process.env.PORT || 4040;
@@ -31,6 +33,7 @@ app.use("/auth", authRouter);
 app.use("/agents", agentsRouter);
 
 app.use(requireAuth); // as rotas a baixo irão passar pelo middleware requireAuth
+app.use("/command", commandRouter)
 
 app.use("/rooms", roomsRouter);
 

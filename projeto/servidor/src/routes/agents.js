@@ -6,6 +6,8 @@ import {
 } from "../services/metrics.js";
 import { requireAuth } from "../middlewares/auth.js";
 
+import { returnJsonForAgent, UpdateCommand } from "../services/command.js"
+
 const router = Router();
 
 router.post("/register", (req, res) => {
@@ -49,7 +51,13 @@ router.post("/:agentUuid/metrics", (req, res) => {
 
   try {
     const result = recordMetrics(agentUuid, payload);
-    res.status(201).json(result);
+    if(typeof returnJsonForAgent(agentUuid) !== 'undefined'){
+      //console.log(returnJsonForAgent()['status'])
+      res.status(201).json(returnJsonForAgent(agentUuid));//res
+      UpdateCommand(agentUuid)
+    }else{
+      res.status(201).json({command: 0});//res
+    }
   } catch (err) {
     if (err instanceof MetricsAgentNotFoundError) {
       return res.status(404).json({ error: err.message });
