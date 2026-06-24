@@ -68,17 +68,17 @@ func (c *Client) Register(req RegisterRequest) (*RegisterResponse, error) {
 	return &result, nil
 }
 
-func (c *Client) SendMetrics(AgentUUID string, metrics *collector.Metrics) error {
+func (c *Client) SendMetrics(AgentUUID string, metrics *collector.Metrics) (string, error) {
 	body, err := json.Marshal(metrics)
 	if err != nil {
-		return fmt.Errorf("erro ao serializar metricas: %w", err)
+		return "", fmt.Errorf("erro ao serializar metricas: %w", err)
 	}
 
 	url := fmt.Sprintf("%s/agents/%s/metrics", c.baseURL, AgentUUID)
 
 	resp, err := c.httpClient.Post(url, "application/json", bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("erro ao chamar %s: %w", url, err)
+		return "", fmt.Errorf("erro ao chamar %s: %w", url, err)
 	}
 
 	defer resp.Body.Close()
@@ -97,14 +97,15 @@ func (c *Client) SendMetrics(AgentUUID string, metrics *collector.Metrics) error
 	if command, ok := result["command"]; ok {
 		if commandFloat, isFloat := command.(float64); isFloat && commandFloat == 0 {
 
-			} else if commandStr, isStr := command.(string); isStr && commandStr != "" {
-			fmt.Printf("COMANDO RECEBIDO DO SERVIDOR: %v\n", commandStr)
+		} else if commandStr, isStr := command.(string); isStr && commandStr != "" {
+			return commandStr, nil
+
 		}
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("servidor retornou status %d ao enviar metricas", resp.StatusCode)
+		return "", fmt.Errorf("servidor retornou status %d ao enviar metricas", resp.StatusCode)
 	}
 
-	return nil
+	return "", nil
 }

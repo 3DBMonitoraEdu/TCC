@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -9,12 +10,14 @@ import (
 	"agente/internal/apiclient"
 	"agente/internal/collector"
 	"agente/internal/config"
+	"agente/internal/executor"
 	"agente/internal/setup"
 )
 
 type Agent struct {
-	cfg    config.Config
-	client *apiclient.Client
+	cfg      config.Config
+	client   *apiclient.Client
+	executor *executor.Executor
 }
 
 func New(cfgPath string) (*Agent, error) {
@@ -53,7 +56,11 @@ func New(cfgPath string) (*Agent, error) {
 
 	}
 
-	return &Agent{cfg: cfg, client: apiclient.New(cfg.ServerURL)}, nil
+	return &Agent{
+		cfg:      cfg,
+		client:   apiclient.New(cfg.ServerURL),
+		executor: executor.New(),
+	}, nil
 }
 
 func (a *Agent) Run() {
@@ -80,12 +87,23 @@ func (a *Agent) collect() {
 	log.Printf("coletado — CPU: %.1f%% RAM: %.1f%% Disco: %.1f%% Processos: %d",
 		metrics.CPUPercent, metrics.MemPercent, metrics.DiskPercent, len(metrics.Processes))
 
-	if err := a.client.SendMetrics(a.cfg.AgentUUID, metrics); err != nil {
+	resp, err := a.client.SendMetrics(a.cfg.AgentUUID, metrics)
+
+	if err != nil {
 		log.Printf("erro ao enviar metricas: %v", err)
 		return
 	}
-
 	log.Printf("metricas enviadas com sucesso")
+	if resp != "" {
+		log.Println("comando recebido para executar: %s", resp)
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if err := a.executor.Execute(ctx, resp); err != nil {
+				log.Println("erro ao executar comando %s: %v", resp, err)
+			}
+		}()
+	}
 
 	self, err := collector.CollectSelf()
 	if err != nil {

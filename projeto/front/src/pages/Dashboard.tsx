@@ -25,6 +25,10 @@ import {
   Clock,
   RefreshCw,
   Lock,
+  Unlock,
+  Keyboard,
+  MousePointer,
+  MonitorOff,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.jsx";
 import { getRooms, createRoom, deleteRoom, getRoomAgents } from "@/api/rooms.ts";
@@ -54,17 +58,17 @@ export default function Dashboard() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [blockingPc, setBlockingPc] = useState(false);
+  const [executingCommand, setExecutingCommand] = useState<string | null>(null);
 
-  const handleBlockPc = async (agentUuid: string) => {
-    console.log("Bloqueando PC com UUID:", agentUuid);
-    setBlockingPc(true);
+  const handleSendCommand = async (agentUuid: string, command: string) => {
+    console.log(`Enviando comando "${command}" para o PC com UUID:`, agentUuid);
+    setExecutingCommand(command);
     try {
-      await api.post("/command/createcommand", { agent_uuid: agentUuid, command: "block" });
+      await api.post("/command/createcommand", { agent_uuid: agentUuid, command: command });
     } catch (err: any) {
       setError(err.message);
     } finally {
-      setBlockingPc(false);
+      setExecutingCommand(null);
     }
   };
 
@@ -421,15 +425,96 @@ export default function Dashboard() {
                       : "nunca"}
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100">
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleBlockPc(selectedAgent.agent_uuid)}
-                      disabled={blockingPc}
-                    >
-                      <Lock className="mr-2 h-4 w-4" />
-                      {blockingPc ? "Bloqueando..." : "Bloquear Comandos do PC"}
-                    </Button>
+                  <div className="pt-4 border-t border-slate-100 space-y-4">
+                    <h3 className="text-sm font-semibold text-slate-900 flex items-center">
+                      <Lock className="h-4 w-4 mr-2 text-blue-600" />
+                      Ações de Controle
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Teclado */}
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-2">
+                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                          <Keyboard className="h-3.5 w-3.5" /> Teclado
+                        </span>
+                        <div className="flex gap-2">
+                          <Button
+                            className="flex-1 text-xs"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "block_keyboard")}
+                            disabled={executingCommand !== null}
+                          >
+                            {executingCommand === "block_keyboard" ? "Bloqueando..." : "Bloquear"}
+                          </Button>
+                          <Button
+                            className="flex-1 text-xs"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "unblock_keyboard")}
+                            disabled={executingCommand !== null}
+                          >
+                            <Unlock className="mr-1 h-3 w-3" />
+                            {executingCommand === "unblock_keyboard" ? "Desbloqueando..." : "Desbloquear"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Mouse */}
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-2">
+                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                          <MousePointer className="h-3.5 w-3.5" /> Mouse
+                        </span>
+                        <div className="flex gap-2">
+                          <Button
+                            className="flex-1 text-xs"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "block_mouse")}
+                            disabled={executingCommand !== null}
+                          >
+                            {executingCommand === "block_mouse" ? "Bloqueando..." : "Bloquear"}
+                          </Button>
+                          <Button
+                            className="flex-1 text-xs"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "unblock_mouse")}
+                            disabled={executingCommand !== null}
+                          >
+                            <Unlock className="mr-1 h-3 w-3" />
+                            {executingCommand === "unblock_mouse" ? "Desbloqueando..." : "Desbloquear"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Monitor / Tela */}
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-2 sm:col-span-2">
+                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                          <MonitorOff className="h-3.5 w-3.5" /> Monitor / Tela
+                        </span>
+                        <div className="flex gap-2">
+                          <Button
+                            className="flex-1 text-xs"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "block_monitor")}
+                            disabled={executingCommand !== null}
+                          >
+                            {executingCommand === "block_monitor" ? "Desativando..." : "Apagar Tela"}
+                          </Button>
+                          <Button
+                            className="flex-1 text-xs"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "unblock_monitor")}
+                            disabled={executingCommand !== null}
+                          >
+                            <Unlock className="mr-1 h-3 w-3" />
+                            {executingCommand === "unblock_monitor" ? "Reativando..." : "Ligar Tela"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

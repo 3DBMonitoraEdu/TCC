@@ -1,0 +1,52 @@
+package executor
+
+import (
+	"context"
+	"fmt"
+	"sync"
+)
+
+type CommandAction func(ctx context.Context) error
+
+type Executor struct {
+	mu       sync.RWMutex
+	commands map[string]CommandAction
+}
+
+func New() *Executor {
+	exec := &Executor{
+		commands: make(map[string]CommandAction),
+	}
+	exec.RegisterDefaultCommands()
+	return exec
+}
+
+func (e *Executor) Register(name string, action CommandAction) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.commands[name] = action
+}
+
+func (e *Executor) Execute(ctx context.Context, cmdName string) error {
+	e.mu.RLock()
+	action, exists := e.commands[cmdName]
+	e.mu.RUnlock()
+
+	if !exists {
+		return fmt.Errorf("commando não reconhecido: %s", cmdName)
+	}
+	return action(ctx)
+
+}
+
+func (e *Executor) RegisterDefaultCommands() {
+	e.Register("block_keyboard", blockKeyboard)
+	e.Register("unblock_keyboard", unBlockKeyboard)
+
+	e.Register("block_mouse", blockMouse)
+	e.Register("unblock_mouse", unBlockMouse)
+
+	e.Register("block_monitor", blockMonitor)
+	e.Register("unblock_monitor", unBlockMonitor)
+
+}
