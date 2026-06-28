@@ -34,12 +34,12 @@ jobs:
           LDFLAGS="-s -w -X main.AppVersion=${{ env.VERSION }}"
           
           # Linux amd64
-          GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o moniedu ./...
+          GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o moniedu .
           zip moniedu_linux_amd64.zip moniedu
           rm moniedu
 
           # Windows amd64
-          GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o moniedu.exe ./...
+          GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o moniedu.exe .
           zip moniedu_windows_amd64.zip moniedu.exe
           rm moniedu.exe
 
