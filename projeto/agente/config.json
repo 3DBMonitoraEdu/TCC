@@ -1,8 +1,8 @@
 {
-  "agent_uuid": "b279fd9a-b9cd-4363-89c6-d4e3e9d425a1",
-  "join_code": "CVDY-MWD7",
+  "agent_uuid": "bf448331-8536-4571-a811-cb318e5f2d36",
+  "join_code": "321-312",
   "server_url": "http://localhost:4040",
-  "interval_secs": 5,
+  "interval_secs": 30,
   "disk_path": "/",
   "blocked_hosts": []
 }
