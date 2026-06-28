@@ -16,7 +16,7 @@ const (
 	WM_SYSCOMMAND    = uintptr(0x0112)
 	SC_MONITORPOWER  = uintptr(0xF170)
 	MONITOR_OFF      = uintptr(2)  // desliga o monitor
-	MONITOR_ON       = uintptr(-1) // liga o monitor
+	MONITOR_ON       = uintptr(^uint(0)) // liga o monitor
 )
 
 func disableMonitor() {
