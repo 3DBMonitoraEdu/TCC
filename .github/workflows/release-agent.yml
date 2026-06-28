@@ -52,6 +52,6 @@ jobs:
             🚀 Release automática gerada pelo CI/CD
             Commit: ${{ github.sha }}
           files: |
-            moniedu_linux_amd64.zip
-            moniedu_windows_amd64.zip
+            projeto/agente/moniedu_linux_amd64.zip
+            projeto/agente/moniedu_windows_amd64.zip
           make_latest: true
