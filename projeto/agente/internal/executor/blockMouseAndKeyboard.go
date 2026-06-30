@@ -526,5 +526,5 @@ func setInputBlock(ctx context.Context, block bool) error {
 	return nil
 }
 
-func blockMouseAndKeyboard(ctx context.Context) error   { return setInputBlock(ctx, true) }
-func unBlockMouseAndKeyboard(ctx context.Context) error { return setInputBlock(ctx, false) }
+func BlockMouseAndKeyboard(ctx context.Context) error   { return setInputBlock(ctx, true) }
+func UnBlockMouseAndKeyboard(ctx context.Context) error { return setInputBlock(ctx, false) }

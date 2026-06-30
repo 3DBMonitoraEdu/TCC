@@ -1,3 +1,5 @@
+//go:build windows
+
 package executor
 
 import (
@@ -40,8 +42,8 @@ func (e *Executor) Execute(ctx context.Context, cmdName string) error {
 }
 
 func (e *Executor) RegisterDefaultCommands() {
-	e.Register("block_mouseAndKeyboard", blockMouseAndKeyboard)
-	e.Register("unblock_mouseAndKeyboard", unBlockMouseAndKeyboard)
+	e.Register("block_mouseAndKeyboard", BlockMouseAndKeyboard)
+	e.Register("unblock_mouseAndKeyboard", UnBlockMouseAndKeyboard)
 
 	//e.Register("block_monitor", blockMonitor)
 	//e.Register("unblock_monitor", unBlockMonitor)
