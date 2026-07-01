@@ -11,6 +11,8 @@ import (
 	"unsafe"
 
 	"log"
+
+	"golang.org/x/sys/windows"
 )
 
 var (
@@ -456,7 +458,7 @@ type kbdllHookStruct struct {
 }
 
 type msg struct {
-	Hwnd    uintptr
+	Hwnd    windows.Handle
 	Message uint32
 	WParam  uintptr
 	LParam  uintptr

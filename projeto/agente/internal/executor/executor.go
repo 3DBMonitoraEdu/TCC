@@ -45,6 +45,6 @@ func (e *Executor) RegisterDefaultCommands() {
 	e.Register("block_mouseAndKeyboard", BlockMouseAndKeyboard)
 	e.Register("unblock_mouseAndKeyboard", UnBlockMouseAndKeyboard)
 
-	//e.Register("block_monitor", blockMonitor)
-	//e.Register("unblock_monitor", unBlockMonitor)
+	e.Register("block_monitor", BlockMonitor)
+	e.Register("unblock_monitor", UnBlockMonitor)
 }
