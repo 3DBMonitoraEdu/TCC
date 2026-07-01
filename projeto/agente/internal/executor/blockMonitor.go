@@ -84,23 +84,7 @@ func wndProc(hwnd uintptr, msg uint32, wParam, lParam uintptr) uintptr {
 	return ret
 }
 
-func fullScreen(hwnd uintptr) {
-	screenW, _, _ := getSystemMetric.Call(0)
-	screenH, _, _ := getSystemMetric.Call(1)
-
-	newStyle := uint32(wsPopup | wsSysMenu | wsThickFrame | wsMaximizeBox | wsMinimizeBox)
-	gwlStyleVar := int32(gwlStyle)
-	_, _, err := setWindowLongPtr.Call(hwnd, uintptr(gwlStyleVar), uintptr(newStyle))
-	if err != nil && err.Error() != "The operation completed successfully." {
-		log.Printf("não foi possivel deixar janela em tela cheia: %v", err)
-	}
-
-	flags := swpNoZOrder | swpFrameChanged | swpShowWindow
-	_, _, err = setWindowPos.Call(hwnd, 0, 0, 0, (screenW + 100), (screenH + 100), uintptr(flags))
-
-}
-
-var blockHwnd uintptr // guardar globalmente pra poder fechar depois
+var blockHwnd uintptr
 
 func createWindow() {
 	screenW, _, _ := getSystemMetric.Call(0)
