@@ -33,6 +33,11 @@ jobs:
         run: |
           LDFLAGS="-s -w -X main.AppVersion=${{ env.VERSION }}"
 
+          # Linux amd64
+          GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o moniedu .
+          zip moniedu_linux_amd64.zip moniedu
+          rm moniedu
+
           # Windows amd64
           GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o moniedu.exe .
           zip moniedu_windows_amd64.zip moniedu.exe
@@ -47,6 +52,7 @@ jobs:
             🚀 Release automática gerada pelo CI/CD
             Commit: ${{ github.sha }}
           files: |
+            projeto/agente/moniedu_linux_amd64.zip
             projeto/agente/moniedu_windows_amd64.zip
           make_latest: true
 
