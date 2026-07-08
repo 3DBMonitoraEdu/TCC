@@ -1,8 +1,0 @@
-{
-  "agent_uuid": "",
-  "join_code": "",
-  "server_url": "http://localhost:4040",
-  "interval_secs": 30,
-  "disk_path": "/",
-  "blocked_hosts": []
-}
