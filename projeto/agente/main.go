@@ -13,7 +13,7 @@ const configPath = "config.json"
 
 func main() {
 
-	log.Printf("Iniciando MyApp %s", AppVersion)
+	log.Printf("Iniciando MyApp -- %s", AppVersion)
 
 	if err := updater.CheckAndUpdate(AppVersion); err != nil {
 		log.Printf("⚠️  Não foi possível verificar atualizações: %v", err)
