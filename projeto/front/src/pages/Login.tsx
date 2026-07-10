@@ -1,3 +1,5 @@
+import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.jsx";
@@ -37,13 +39,33 @@ export default function Login() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <Card className="w-full max-w-md">
+return (
+  <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#020817] p-4">
+
+  <AnimatedGridPattern
+  numSquares={40}
+  maxOpacity={0.45}
+  duration={2}
+  repeatDelay={0.3}
+className={cn(
+  "[mask-image:radial-gradient(900px_circle_at_center,white,transparent)]",
+  "absolute -top-20 inset-x-0 h-[200%] w-full skew-y-12"
+)}
+/>
+
+<div className="absolute h-[500px] w-[500px] rounded-full bg-blue-600/15 blur-[120px]" />
+
+    <div className="relative z-10 animate-in fade-in zoom-in-95 duration-700">
+      <Card className="w-full max-w-md border border-white/20 bg-white/85 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold text-blue-700">Monitoramento Escolar</CardTitle>
-          <CardDescription>Acesse sua conta para monitorar a sala</CardDescription>
+          <CardTitle className="text-2xl font-bold text-blue-700">
+            Monitoramento Escolar
+          </CardTitle>
+          <CardDescription>
+            Acesse sua conta para monitorar a sala
+          </CardDescription>
         </CardHeader>
+
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
@@ -63,6 +85,7 @@ export default function Login() {
                 required
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <Input
@@ -75,6 +98,7 @@ export default function Login() {
               />
             </div>
           </CardContent>
+
           <CardFooter className="flex flex-col space-y-4">
             <Button
               type="submit"
@@ -84,9 +108,13 @@ export default function Login() {
               <LogIn className="mr-2 h-4 w-4" />
               {loading ? "Entrando..." : "Entrar"}
             </Button>
+
             <p className="text-sm text-center text-slate-600">
               Não tem uma conta?{" "}
-              <a href="/signup" className="text-blue-600 hover:underline font-medium">
+              <a
+                href="/signup"
+                className="text-blue-600 hover:underline font-medium"
+              >
                 Criar conta
               </a>
             </p>
@@ -94,5 +122,7 @@ export default function Login() {
         </form>
       </Card>
     </div>
-  );
+
+  </div>
+);
 }
