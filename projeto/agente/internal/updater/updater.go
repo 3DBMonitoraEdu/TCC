@@ -31,17 +31,24 @@ func getArch() string {
 	}
 }
 
+var DevelopmentMode = true
+
 func CheckAndUpdate(appVersion string) error {
+	if DevelopmentMode {
+		log.Println("modo de desenvolvimento ativo!!!. atualizações desativadas!!!.")
+		return nil
+	}
+
 	u := &updater.Updater{
 		Provider: &provider.Github{
 			RepositoryURL: "https://github.com/3DBMonitoraEdu/TCC",
-			ArchiveName: fmt.Sprintf("moniedu_%s_%s.zip", getOS(), getArch()),
+			ArchiveName:   fmt.Sprintf("moniedu_%s_%s.zip", getOS(), getArch()),
 		},
 		ExecutableName: "moniedu",
-		Version: appVersion,
+		Version:        appVersion,
 	}
 
-	latest, err := u.GetLatestVersion();
+	latest, err := u.GetLatestVersion()
 	if err != nil {
 		return fmt.Errorf("erro ao verificar versão: %w", err)
 	}
@@ -53,12 +60,12 @@ func CheckAndUpdate(appVersion string) error {
 		return fmt.Errorf("erro ao atualizar: %w", err)
 	}
 
-	switch updateStatus{
+	switch updateStatus {
 	case updater.Updated:
 		log.Println("✅ Atualização aplicada com sucesso! Reinicie o app.")
 	case updater.UpToDate:
 		log.Println("App já está em sua ultima versão.")
 	}
-	
+
 	return nil
 }
