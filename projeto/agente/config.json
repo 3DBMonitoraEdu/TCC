@@ -1,8 +1,0 @@
-{
-  "agent_uuid": "feeb370d-319d-4202-9683-17d31230700d",
-  "join_code": "EAQQ-NTXW",
-  "server_url": "http://localhost:4040",
-  "interval_secs": 5,
-  "disk_path": "/",
-  "blocked_hosts": []
-}
