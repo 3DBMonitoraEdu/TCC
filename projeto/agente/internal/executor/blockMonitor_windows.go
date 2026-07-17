@@ -46,6 +46,11 @@ var (
 	drawText      = user32.NewProc("DrawTextW")
 
 	sendMessage = user32.NewProc("SendMessageW")
+
+	setProcessDPIAware  = user32.NewProc("SetProcessDPIAware")
+	setForegroundWindow = user32.NewProc("SetForegroundWindow")
+	setActiveWindow     = user32.NewProc("SetActiveWindow")
+	setFocus            = user32.NewProc("SetFocus")
 )
 
 const (
@@ -77,6 +82,11 @@ const (
 	DT_SINGLELINE = 0x00000020
 
 	WS_EX_TOPMOST = 0x00000008
+
+	SM_XVIRTUALSCREEN  = 76
+	SM_YVIRTUALSCREEN  = 77
+	SM_CXVIRTUALSCREEN = 78
+	SM_CYVIRTUALSCREEN = 79
 )
 
 type wndClassEx struct {
@@ -172,8 +182,18 @@ func wndProc(hwnd uintptr, msg uint32, wParam, lParam uintptr) uintptr {
 var blockHwnd uintptr
 
 func createWindow() {
-	screenW, _, _ := getSystemMetric.Call(0)
-	screenH, _, _ := getSystemMetric.Call(1)
+	screenX, _, _ := getSystemMetric.Call(SM_XVIRTUALSCREEN)
+	screenY, _, _ := getSystemMetric.Call(SM_YVIRTUALSCREEN)
+	screenW, _, _ := getSystemMetric.Call(SM_CXVIRTUALSCREEN)
+	screenH, _, _ := getSystemMetric.Call(SM_CYVIRTUALSCREEN)
+
+	// Fallback para caso as métricas virtuais falhem (usa o monitor principal)
+	if screenW == 0 || screenH == 0 {
+		screenX = 0
+		screenY = 0
+		screenW, _, _ = getSystemMetric.Call(0)
+		screenH, _, _ = getSystemMetric.Call(1)
+	}
 
 	runtime.LockOSThread()
 
@@ -197,8 +217,9 @@ func createWindow() {
 		WS_EX_TOPMOST,
 		uintptr(unsafe.Pointer(className)),
 		uintptr(unsafe.Pointer(title)),
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, (screenW + 100), (screenH + 100),
+		wsPopup,
+		uintptr(screenX), uintptr(screenY),
+		uintptr(screenW), uintptr(screenH),
 		0, 0, instace, 0,
 	)
 	blockHwnd = hwnd
@@ -210,9 +231,14 @@ func createWindow() {
 	setWindowPos.Call(
 		blockHwnd,
 		^uintptr(0), // HWND_TOP
-		0, 0, screenW, screenH,
+		uintptr(screenX), uintptr(screenY),
+		uintptr(screenW), uintptr(screenH),
 		swpFrameChanged|swpShowWindow,
 	)
+
+	setForegroundWindow.Call(blockHwnd)
+	setActiveWindow.Call(blockHwnd)
+	setFocus.Call(blockHwnd)
 
 	var m msg
 	for {
