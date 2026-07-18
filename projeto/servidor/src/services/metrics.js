@@ -15,8 +15,8 @@ export function recordMetrics(agentUuid, payload) {
   `);
 
   const insertProcess = db.prepare(`
-    INSERT INTO processes ( metric_id, name, pid, mem_mb )
-    VALUES ( ?, ?, ?, ? )
+    INSERT INTO processes ( metric_id, name, pid, mem_mb, created_at )
+    VALUES ( ?, ?, ?, ?, COALESCE(?, datetime('now')) )
   `);
 
   const updateLastSeen = db.prepare(`
@@ -38,7 +38,7 @@ export function recordMetrics(agentUuid, payload) {
     const metricId = result.lastInsertRowid;
 
     for (const proc of payload.processes ?? []) {
-      insertProcess.run(metricId, proc.name, proc.pid ?? null, proc.memMb ?? null);
+      insertProcess.run(metricId, proc.name, proc.pid ?? null, proc.memMb ?? null, proc.createdAt ?? null);
     }
 
     updateLastSeen.run(agent.id);

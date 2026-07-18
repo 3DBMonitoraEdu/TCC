@@ -59,7 +59,14 @@ export function getRoomAgents(roomId, teacherId) {
       m.disk_percent,
       m.disk_used_gb,
       m.disk_total_gb,
-      m.collected_at
+      m.collected_at,
+      (
+           SELECT name FROM processes 
+             WHERE metric_id = m.id 
+             ORDER BY created_at DESC 
+             LIMIT 1
+           ) as last_active_process
+
     FROM agents a
     LEFT JOIN metrics m ON m.id = (
       SELECT id FROM metrics

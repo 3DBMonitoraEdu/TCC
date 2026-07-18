@@ -93,10 +93,17 @@ func collectProcesses() ([]ProcessInfo, error) {
 			memMB = float64(memInfo.RSS) / 1024 / 1024
 		}
 
+		createTimeMs, err := p.CreateTime()
+		if err != nil {
+			continue
+		}
+		createTime := time.UnixMilli(createTimeMs)
+
 		result = append(result, ProcessInfo{
-			PID:   p.Pid,
-			Name:  name,
-			MemMB: memMB,
+			PID:       p.Pid,
+			Name:      name,
+			MemMB:     memMB,
+			CreatedAt: createTime,
 		})
 	}
 

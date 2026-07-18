@@ -29,10 +29,12 @@ import {
   Keyboard,
   MousePointer,
   MonitorOff,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.jsx";
 import { getRooms, createRoom, deleteRoom, getRoomAgents } from "@/api/rooms.ts";
-import { Room, Agent, getAgentStatus } from "@/types/index.ts";
+import { Room, Agent, Process, getAgentStatus, sortProcessesByCreationDate } from "@/types/index.ts";
+import { getAgentProcesses } from "@/api/agents.ts";
 import { api } from "@/api/client.js";
 
 const STATUS_COLOR = {
@@ -55,6 +57,8 @@ export default function Dashboard() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [agentProcesses, setAgentProcesses] = useState<Process[]>([]);
+  const [loadingProcesses, setLoadingProcesses] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -117,6 +121,38 @@ export default function Dashboard() {
     const interval = setInterval(() => fetchAgents(selectedRoom.id), 30_000);
     return () => clearInterval(interval);
   }, [selectedRoom, fetchAgents]);
+
+  // Sincroniza o agente selecionado com as atualizações em segundo plano
+  useEffect(() => {
+    if (selectedAgent) {
+      const updated = agents.find((a) => a.agent_uuid === selectedAgent.agent_uuid);
+      if (updated) {
+        setSelectedAgent(updated);
+      }
+    }
+  }, [agents, selectedAgent?.agent_uuid]);
+
+  // Carrega os processos do agente selecionado ao abrir os detalhes (sem interval/polling rápido)
+  useEffect(() => {
+    if (!selectedAgent) {
+      setAgentProcesses([]);
+      return;
+    }
+
+    const fetchProcesses = async () => {
+      setLoadingProcesses(true);
+      try {
+        const data = await getAgentProcesses(selectedAgent.agent_uuid);
+        setAgentProcesses(data);
+      } catch (err: any) {
+        console.error("Erro ao buscar processos:", err);
+      } finally {
+        setLoadingProcesses(false);
+      }
+    };
+
+    fetchProcesses();
+  }, [selectedAgent?.agent_uuid]);
 
   const handleAddRoom = async () => {
     if (!newRoomName.trim()) return;
@@ -332,6 +368,14 @@ export default function Dashboard() {
                         </div>
                         <Progress value={agent.mem_percent ?? 0} className="h-1.5" />
                       </div>
+                      <div className="flex justify-between text-xs text-slate-600 pt-1">
+                        <span className="flex items-center text-slate-500">
+                          <Activity className="h-3 w-3 mr-1 text-slate-400" /> Último processo
+                        </span>
+                        <span className="font-medium text-slate-700 truncate max-w-[160px]" title={agent.last_active_process ?? "Nenhum"}>
+                          {agent.last_active_process ?? "—"}
+                        </span>
+                      </div>
                       <div className="flex items-center text-blue-600 text-sm font-medium pt-2 border-t border-slate-100">
                         Ver detalhes <ChevronRight className="h-4 w-4 ml-1" />
                       </div>
@@ -347,7 +391,7 @@ export default function Dashboard() {
         {selectedAgent &&
           (() => {
             const status = getAgentStatus(selectedAgent);
-            const processes = selectedAgent.processes ?? [];
+            const processes = agentProcesses;
             return (
               <Card className="border-slate-200 shadow-sm max-w-3xl mx-auto">
                 <CardHeader>
@@ -391,28 +435,50 @@ export default function Dashboard() {
                   </div>
 
                   <div className="pt-4 border-t border-slate-100">
-                    <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center">
-                      <Monitor className="h-4 w-4 mr-2 text-blue-600" />
-                      Processos em execução ({processes.length})
+                    <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center justify-between">
+                      <span className="flex items-center">
+                        <Monitor className="h-4 w-4 mr-2 text-blue-600" />
+                        Processos em execução ({processes.length})
+                      </span>
+                      {loadingProcesses && (
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin text-blue-500" />
+                      )}
                     </h3>
-                    {processes.length === 0 ? (
+                    {loadingProcesses && processes.length === 0 ? (
+                      <p className="text-sm text-slate-500 italic flex items-center">
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin text-blue-600" />
+                        Carregando processos...
+                      </p>
+                    ) : processes.length === 0 ? (
                       <p className="text-sm text-slate-500 italic">Nenhum processo disponível.</p>
                     ) : (
                       <ul className="space-y-1 max-h-64 overflow-y-auto">
-                        {processes.map((proc: any, index: number) => (
-                          <li
-                            key={index}
-                            className="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-2 rounded-md border border-slate-100"
-                          >
-                            <span className="flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-green-500" />
-                              {proc.name}
-                            </span>
-                            <span className="text-xs text-slate-400">
-                              {proc.mem_mb?.toFixed(1)} MB
-                            </span>
-                          </li>
-                        ))}
+                        {processes.map((proc: any, index: number) => {
+                          const isLastActive = index === 0;
+                          return (
+                            <li
+                              key={index}
+                              className={`flex items-center justify-between text-sm p-2 rounded-md border ${
+                                isLastActive
+                                  ? "text-blue-900 bg-blue-50 border-blue-200 font-medium"
+                                  : "text-slate-700 bg-slate-50 border-slate-100"
+                              }`}
+                            >
+                              <span className="flex items-center gap-2">
+                                <span className={`w-2 h-2 rounded-full ${isLastActive ? "bg-blue-600 animate-pulse" : "bg-green-500"}`} />
+                                {proc.name}
+                                {isLastActive && (
+                                  <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">
+                                    Último Ativo
+                                  </span>
+                                )}
+                              </span>
+                              <span className={`text-xs ${isLastActive ? "text-blue-600" : "text-slate-400"}`}>
+                                {proc.mem_mb?.toFixed(1)} MB
+                              </span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     )}
                   </div>

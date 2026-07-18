@@ -67,7 +67,7 @@ export function getAgentMetrics(agentUuid, { limit = 50, offset = 0 } = {}, teac
   const metricsWithProcesses = metrics.map((metric) => {
     const processes = db
       .prepare(`
-      SELECT name, pid, mem_mb FROM processes WHERE metric_id = ? ORDER BY mem_mb DESC LIMIT 50
+      SELECT name, pid, mem_mb, created_at FROM processes WHERE metric_id = ? ORDER BY mem_mb DESC LIMIT 50
     `)
       .all(metric.id);
     return { ...metric, processes };

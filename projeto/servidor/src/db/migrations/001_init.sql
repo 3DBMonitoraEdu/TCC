@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS processes (
   name TEXT NOT NULL,
   pid INTEGER,
   mem_mb REAL,
+  created_at TEXT ,
   FOREIGN KEY (metric_id) REFERENCES metrics(id) ON DELETE CASCADE
 );
 
