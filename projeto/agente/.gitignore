@@ -1,5 +1,6 @@
 *.exe
 config.json
+
 build/
 dist/
 
