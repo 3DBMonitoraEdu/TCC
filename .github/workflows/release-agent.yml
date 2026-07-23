@@ -17,11 +17,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # necessário para o git describe
+          fetch-depth: 0
 
       - name: Pegar versão da tag
         run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
-        # github.ref_name já vem como "v1.5.0"
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -32,18 +31,35 @@ jobs:
         working-directory: ./projeto/agente
         run: |
           LDFLAGS="-s -w -X main.AppVersion=${{ env.VERSION }}"
+          
+          # Garantir que a pasta build existe
+          mkdir -p build
 
-          # Linux amd64
-          GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o moniedu .
+          # 1. Build Linux amd64
+          GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o moniedu ./cmd/agente
           zip moniedu_linux_amd64.zip moniedu
           rm moniedu
 
-          # Windows amd64
-          GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o moniedu.exe .
-          zip moniedu_windows_amd64.zip moniedu.exe
-          rm moniedu.exe
+          # 2. Build Windows amd64 (Gerando os arquivos que o Inno Setup precisa)
+          # O Inno Setup espera "agente.exe" e "agente-session.exe" dentro de "build/"
+          GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o build/agente.exe ./cmd/agente
+          GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o build/agente-session.exe ./cmd/agente-session
+          
+          # O config.json já deve estar na pasta build/ pelo seu repositório, 
+          # mas se precisar copiar de outro lugar, seria aqui.
 
-      - name: Criar GitHub Release e fazer upload dos assets
+          # Zip com os binários avulsos do Windows (mantido caso alguém queira usar sem o instalador)
+          zip -j moniedu_windows_amd64.zip build/agente.exe build/agente-session.exe
+
+      - name: Upload Artifact da pasta build
+        # Salva a pasta build temporariamente para o job do Windows usar
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-files
+          path: projeto/agente/build/
+          retention-days: 1
+
+      - name: Criar GitHub Release e fazer upload dos zips
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
@@ -60,6 +76,42 @@ jobs:
         uses: dev-drprasad/delete-older-releases@v0.3.4
         with:
           keep_latest: 10
-          delete_tags: true       # apaga a tag git junto com a release
+          delete_tags: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+  # --- NOVO JOB: Roda no Windows só para criar o Setup ---
+  build-windows-setup:
+    needs: build-and-release # Só roda DEPOIS que o Ubuntu compilar e criar a release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pegar versão da tag
+        # No Windows (PowerShell), a forma de salvar env vars é um pouco diferente
+        run: echo "VERSION=${env:GITHUB_REF_NAME}" >> $env:GITHUB_ENV
+
+      - name: Baixar binários do Windows
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-files
+          path: projeto/agente/build/
+
+      - name: Compilar Instalador (Inno Setup)
+        working-directory: projeto/agente
+        # O 'iscc' é o compilador de linha de comando do Inno Setup. 
+        # Ele já vem pré-instalado nas máquinas windows-latest do GitHub.
+        run: iscc monitorEduSetup.iss
+
+      - name: Fazer upload do Setup para a Release existente
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          # Ao usar a mesma tag_name, essa action não recria a release, 
+          # ela apenas adiciona esse novo arquivo à release que o Ubuntu criou.
+          files: projeto/agente/dist/MoniTecSetup.exe
