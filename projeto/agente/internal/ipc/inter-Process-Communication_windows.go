@@ -5,6 +5,8 @@ package ipc
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"log"
 	"net"
 	"sync"
 	"time"
@@ -42,6 +44,10 @@ func StartComandoPipeServer(cmdChan <-chan Command) error {
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
+				if errors.Is(err, winio.ErrPipeListenerClosed) {
+					log.Println("pipe listener foi fechado, encerrando loop de aceitação")
+					return // sai da goroutine de vez, não tenta mais
+				}
 				continue
 			}
 			client := &pipeClient{
@@ -124,4 +130,3 @@ func ListenForCommands(ctx context.Context, cmdChan chan<- Command) {
 		conn.Close()
 	}
 }
-

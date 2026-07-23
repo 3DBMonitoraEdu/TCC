@@ -51,6 +51,8 @@ var (
 	setForegroundWindow = user32.NewProc("SetForegroundWindow")
 	setActiveWindow     = user32.NewProc("SetActiveWindow")
 	setFocus            = user32.NewProc("SetFocus")
+
+	wndProcCallback = syscall.NewCallback(wndProc)
 )
 
 const (
@@ -200,7 +202,6 @@ func createWindow() {
 	instace, _, _ := getModuleHandle.Call(0)
 	title, _ := windows.UTF16PtrFromString("BLOQUEADO")
 	className, _ := windows.UTF16PtrFromString("blockWindow")
-	wndProcCallback := syscall.NewCallback(wndProc)
 
 	blueBrush, _, _ := createSolidBrush.Call(0x00D77800)
 
@@ -249,6 +250,7 @@ func createWindow() {
 		translateMessage.Call(uintptr(unsafe.Pointer(&m)))
 		dispatchMessage.Call(uintptr(unsafe.Pointer(&m)))
 	}
+	deleteObject.Call(blueBrush)
 }
 
 func closeWindow() uintptr {
