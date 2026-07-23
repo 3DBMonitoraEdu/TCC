@@ -1,3 +1,6 @@
-agente
 *.exe
 config.json
+build/
+dist/
+
+

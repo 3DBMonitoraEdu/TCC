@@ -1,7 +1,6 @@
 package setup
 
 import (
-
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"agente/internal/apiclient"
 	"agente/internal/config"
 
 	"github.com/ncruces/zenity"
@@ -51,4 +51,49 @@ func Run(cfg config.Config) (config.Config, error) {
 	fmt.Println("=== Configuracao concluida ===")
 
 	return cfg, nil
+}
+
+func CheckJoinCode(configPath string) (string, error) {
+	log.Println("iniciando configurador do agente....")
+
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		log.Printf("Erro ao carregar config: %v", err)
+	}
+
+	if IsConfigured(cfg) {
+		log.Println("Agente já está configurado.")
+		return "isConfigured", nil
+	}
+
+	cfg, err = Run(cfg)
+	if err != nil {
+		log.Printf("Erro na configuração inicial: %v", err)
+		return "erro ao configurar", err
+	}
+
+	client := apiclient.New(cfg.ServerURL)
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "Desconhecido"
+	}
+
+	resp, err := client.Register(apiclient.RegisterRequest{
+		JoinCode:  cfg.JoinCode,
+		AgentUUID: cfg.AgentUUID,
+		Hostname:  hostname,
+	})
+	if err != nil {
+		log.Printf("Erro ao registrar agente no servidor: %v", err)
+		return "erro ao registrar", err
+	}
+
+	if err := config.Save(configPath, cfg); err != nil {
+		log.Printf("Erro ao salvar config: %v", err)
+		return "erro ao salvar config", err
+	}
+
+	log.Printf("Agente registrado com sucesso! ID=%d, RoomID=%d\n", resp.ID, resp.RoomID)
+	return "", nil
 }

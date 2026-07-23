@@ -1,11 +1,7 @@
-
 package agent
 
 import (
-	"context"
-	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"agente/internal/apiclient"
@@ -13,54 +9,44 @@ import (
 	"agente/internal/config"
 	"agente/internal/executor"
 	"agente/internal/setup"
+
+	"agente/internal/ipc"
 )
 
 type Agent struct {
 	cfg      config.Config
 	client   *apiclient.Client
 	executor *executor.Executor
+	cmdChan  chan ipc.Command
 }
 
 func New(cfgPath string) (*Agent, error) {
-	cfg, err := config.Load(cfgPath)
-	if err != nil {
-		return nil, fmt.Errorf("Erro ao carregar config: %v", err)
+	var _cfg config.Config
+	for {
+		var err error
+		_cfg, err = config.Load(cfgPath)
+		if err != nil {
+			log.Printf("Erro ao ler arquivo de configuração (tentando novamente em 10s): %v", err)
+		} else if setup.IsConfigured(_cfg) {
+			log.Println("Configuração detectada com sucesso! Inicializando o agente...")
+			break
+		} else {
+			log.Println("Agente não configurado. Aguardando configuração via agente-ui...")
+		}
+
+		time.Sleep(10 * time.Second)
 	}
 
-	if !setup.IsConfigured(cfg) {
-		cfg, err = setup.Run(cfg)
-		if err != nil {
-			return nil, fmt.Errorf("erro na configuracao inicial: %v", err)
-		}
-
-		client := apiclient.New(cfg.ServerURL)
-
-		hostname, err := os.Hostname()
-		if err != nil {
-			hostname = "Desconhecido"
-		}
-
-		resp, err := client.Register(apiclient.RegisterRequest{
-			JoinCode:  cfg.JoinCode,
-			AgentUUID: cfg.AgentUUID,
-			Hostname:  hostname,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("erro ao registrar agente no servidor: %v", err)
-		}
-
-		if err := config.Save(cfgPath, cfg); err != nil {
-			return nil, fmt.Errorf("erro ao salvar config: %v", err)
-		}
-
-		log.Printf("Agente registrado com sucesso! ID=%d, RoomID=%d\n", resp.ID, resp.RoomID)
-
+	cmdChan := make(chan ipc.Command, 100)
+	if err := ipc.StartComandoPipeServer(cmdChan); err != nil {
+		log.Printf("⚠️ Erro ao iniciar servidor de Named Pipe: %v", err)
 	}
 
 	return &Agent{
-		cfg:      cfg,
-		client:   apiclient.New(cfg.ServerURL),
+		cfg:      _cfg,
+		client:   apiclient.New(_cfg.ServerURL),
 		executor: executor.New(),
+		cmdChan:  cmdChan,
 	}, nil
 }
 
@@ -96,14 +82,12 @@ func (a *Agent) collect() {
 	}
 	log.Printf("metricas enviadas com sucesso")
 	if resp != "" {
-		log.Println("comando recebido para executar: %s", resp)
-		go func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			if err := a.executor.Execute(ctx, resp); err != nil {
-				log.Println("erro ao executar comando %s: %v", resp, err)
-			}
-		}()
+		log.Printf("comando recebido para executar: %s", resp)
+		select {
+		case a.cmdChan <- ipc.Command{Data: resp}:
+		default:
+			log.Printf("⚠️ Canal de comandos do Named Pipe cheio. Comando ignorado: %s", resp)
+		}
 	}
 
 	self, err := collector.CollectSelf()
@@ -114,3 +98,8 @@ func (a *Agent) collect() {
 
 	log.Printf("agente (pid %d) - CPU %.2f%% RAM: %.2fMB", self.PID, self.CPUPercent, self.MemMB)
 }
+
+func (a *Agent) Stop() {
+	log.Printf("parando agente...")
+}
+

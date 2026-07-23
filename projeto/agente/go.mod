@@ -4,6 +4,7 @@ go 1.26.4
 
 require (
 	github.com/google/uuid v1.6.0
+	github.com/kardianos/service v1.3.0
 	github.com/mouuff/go-rocket-update v1.5.6
 	github.com/ncruces/zenity v0.10.14
 	github.com/shirou/gopsutil/v3 v3.24.5
@@ -11,6 +12,7 @@ require (
 )
 
 require (
+	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/akavel/rsrc v0.10.2 // indirect
 	github.com/dchest/jsmin v0.0.0-20220218165748-59f39799265f // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
