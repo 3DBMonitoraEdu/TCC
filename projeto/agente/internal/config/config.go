@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 )
 
@@ -29,9 +30,6 @@ func Load(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if os.IsNotExist(err) {
 		cfg := Default()
-		if saveErr := Save(path, cfg); saveErr != nil {
-			return cfg, saveErr
-		}
 		return cfg, nil
 	}
 	if err != nil {
@@ -50,5 +48,14 @@ func Save(path string, cfg Config) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0o644)
+
+	log.Printf("Salvando em: %s", path)
+
+	err = os.WriteFile(path, data, 0o644)
+	if err != nil {
+		log.Printf("WriteFile erro (%T): %v", err, err)
+		return err
+	}
+
+	return nil
 }

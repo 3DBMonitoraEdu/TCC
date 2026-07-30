@@ -6,7 +6,6 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
-	"github.com/shirou/gopsutil/v3/process"
 )
 
 func Collect(diskPath string) (*Metrics, error) {
@@ -34,7 +33,7 @@ func Collect(diskPath string) (*Metrics, error) {
 	m.DiskUsedGB = diskUsedGb
 	m.DiskTotalGB = diskTotalGb
 
-	process, err := collectProcesses()
+	process, err := CollectProcesses()
 	if err != nil {
 		return nil, err
 	}
@@ -73,39 +72,4 @@ func collectDisk(path string) (percent float64, usedGB float64, totalGB float64,
 
 	const gb = 1024 * 1024 * 1024
 	return usage.UsedPercent, float64(usage.Used) / gb, float64(usage.Total) / gb, nil
-}
-
-func collectProcesses() ([]ProcessInfo, error) {
-	procs, err := process.Processes()
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]ProcessInfo, 0, len(procs))
-	for _, p := range procs {
-		name, err := p.Name()
-		if err != nil || name == "" {
-			continue
-		}
-
-		var memMB float64
-		if memInfo, err := p.MemoryInfo(); err == nil && memInfo != nil {
-			memMB = float64(memInfo.RSS) / 1024 / 1024
-		}
-
-		createTimeMs, err := p.CreateTime()
-		if err != nil {
-			continue
-		}
-		createTime := time.UnixMilli(createTimeMs)
-
-		result = append(result, ProcessInfo{
-			PID:       p.Pid,
-			Name:      name,
-			MemMB:     memMB,
-			CreatedAt: createTime,
-		})
-	}
-
-	return result, nil
 }

@@ -71,7 +71,6 @@ Filename: "{app}\{#MyExeName}"; Parameters: "start"; \
         Parameters: "/Create /TN ""MoniTecAgentUI"" /TR ""'{app}\{#MyUIExeName}'"" /SC ONLOGON /RL LIMITED /F"; \
         Flags: runhidden waituntilterminated; StatusMsg: "Configurando interface do agente no logon..."
 
-
 ; ============================================================
 ; DESINSTALAÇÃO
 ; Ordem importa: parar -> desregistrar -> (depois o Inno remove os

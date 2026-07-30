@@ -7,12 +7,23 @@ import (
 
 	"context"
 	"log"
+
+	"runtime"
 	"time"
 )
 
-const configPath = "C:\\ProgramData\\MoniTec\\config.json"
-
 func main() {
+	var configPath string
+	switch runtime.GOOS {
+	case "windows":
+		configPath = "C:\\ProgramData\\MoniTec\\config.json"
+
+
+	case "linux":
+		configPath = "/tmp/MoniTec"
+
+
+	}
 	_, err := setup.CheckJoinCode(configPath)
 	if err != nil {
 		log.Fatalf("Erro ao configurar o agente: %v", err)
@@ -37,4 +48,3 @@ func main() {
 		cancel()
 	}
 }
-

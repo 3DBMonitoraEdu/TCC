@@ -4,18 +4,28 @@ import (
 	"log"
 	"os"
 
+
 	"agente/internal/platform"
 	"agente/internal/updater"
 
 	"github.com/kardianos/service"
+	"runtime"
 )
 
 var AppVersion = "v0.0.0"
 
-const configPath = "C:\\ProgramData\\MoniTec\\config.json"
-
 func main() {
+	var configPath string
+	switch runtime.GOOS {
+	case "windows":
+		configPath = "C:\\ProgramData\\MoniTec\\config.json"
 
+
+	case "linux":
+		configPath = "/tmp/MoniTec"
+
+
+	}
 	log.Printf("Iniciando MyApp -- %s", AppVersion)
 
 	svc, err := platform.NewService(configPath)
