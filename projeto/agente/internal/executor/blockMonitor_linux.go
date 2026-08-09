@@ -1,6 +1,5 @@
 //go:build linux
 
-
 package executor
 
 import (
@@ -87,11 +86,11 @@ func getActiveOutputs(ctx context.Context) ([]string, error) {
 }
 
 // BlockMonitor desliga o monitor
-func BlockMonitor(ctx context.Context) error {
+func LockMonitor(ctx context.Context, params map[string]int32) error {
 	return setMonitorBlock(ctx, true)
 }
 
 // UnBlockMonitor liga o monitor
-func UnBlockMonitor(ctx context.Context) error {
+func UnlockMonitor(ctx context.Context, params map[string]int32) error {
 	return setMonitorBlock(ctx, false)
 }

@@ -26,7 +26,7 @@ func setInputBlock(ctx context.Context, block bool) error {
 		}
 
 		if strings.Contains(line, "keyboard") || strings.Contains(line, "mouse") ||
-		   strings.Contains(line, "touchpad") || strings.Contains(line, "slave") {
+			strings.Contains(line, "touchpad") || strings.Contains(line, "slave") {
 			parts := strings.Split(line, "id=")
 			if len(parts) > 1 {
 				id := strings.Fields(parts[1])[0]
@@ -54,11 +54,10 @@ func setInputBlock(ctx context.Context, block bool) error {
 	return nil
 }
 
-
-func BlockMouseAndKeyboard(ctx context.Context) error {
+func LockMouseAndKeyboard(ctx context.Context, params map[string]int32) error {
 	return setInputBlock(ctx, true)
 }
 
-func UnBlockMouseAndKeyboard(ctx context.Context) error {
+func UnlockMouseAndKeyboard(ctx context.Context, param map[string]int32) error {
 	return setInputBlock(ctx, false)
 }

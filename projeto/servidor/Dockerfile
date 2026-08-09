@@ -1,15 +1,17 @@
-from node:18.16.0-alpine3.18
+FROM node:18-slim
 
-RUN apk add --no-cache python3 make g++
+# Instala tini para repasse correto de sinais (PID 1)
+RUN apt-get update && apt-get install -y tini python3 make g++ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci  --omit=dev
+RUN npm ci
 
 COPY . .
 
 EXPOSE 4040
 
-CMD ["npm", "run", "dev"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["node", "src/index.js"]

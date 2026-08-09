@@ -8,6 +8,7 @@ services:
       - "4040:4040"
     volumes:
       - ./servidor/data:/app/data
+      - /app/node_modules
     restart: always
 
   front:

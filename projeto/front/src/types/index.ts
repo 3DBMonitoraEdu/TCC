@@ -57,6 +57,20 @@ export function sortProcessesByCreationDate(processes: Process[]): Process[] {
   });
 }
 
+export function sortProcessesCustom(processes: Process[]): Process[] {
+  if (processes.length <= 1) return processes;
+
+  // Primeiro, ordena por data de criação para identificar o processo mais recente
+  const sortedByDate = sortProcessesByCreationDate(processes);
+  const mostRecent = sortedByDate[0];
+  const rest = sortedByDate.slice(1);
+
+  // Ordena o restante pelo peso de memória RAM (mem_mb) em ordem decrescente
+  rest.sort((a, b) => (b.mem_mb ?? 0) - (a.mem_mb ?? 0));
+
+  return [mostRecent, ...rest];
+}
+
 // Determina status do agente baseado no last_seen_at e metricas.
 export function getAgentStatus(agent: Agent): AgentStatus {
   if (!agent.last_seen_at) return "offline";

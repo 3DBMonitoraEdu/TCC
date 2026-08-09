@@ -30,6 +30,7 @@ import {
   MousePointer,
   MonitorOff,
   Activity,
+  XCircle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.jsx";
 import { getRooms, createRoom, deleteRoom, getRoomAgents } from "@/api/rooms.ts";
@@ -464,18 +465,40 @@ export default function Dashboard() {
                                   : "text-slate-700 bg-slate-50 border-slate-100"
                               }`}
                             >
-                              <span className="flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full ${isLastActive ? "bg-blue-600 animate-pulse" : "bg-green-500"}`} />
-                                {proc.name}
-                                {isLastActive && (
-                                  <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">
-                                    Último Ativo
-                                  </span>
+                              <div className="flex items-center gap-3">
+                                <span className="flex items-center gap-2">
+                                  <span className={`w-2 h-2 rounded-full ${isLastActive ? "bg-blue-600 animate-pulse" : "bg-green-500"}`} />
+                                  <span>{proc.name}</span>
+                                  {proc.pid !== null && proc.pid !== undefined && (
+                                    <span className="text-[11px] font-mono bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded">
+                                      PID: {proc.pid}
+                                    </span>
+                                  )}
+                                  {isLastActive && (
+                                    <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">
+                                      Último Ativo
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className={`text-xs ${isLastActive ? "text-blue-600" : "text-slate-400"}`}>
+                                  {proc.mem_mb != null ? `${proc.mem_mb.toFixed(1)} MB` : "—"}
+                                </span>
+                                {proc.pid !== null && proc.pid !== undefined && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-100 flex items-center gap-1"
+                                    onClick={() => handleSendCommand(selectedAgent.agent_uuid, `command=kill_pid&pid=${proc.pid}`)}
+                                    disabled={executingCommand === `command=kill_pid&pid=${proc.pid}`}
+                                    title={`Encerrar processo (PID ${proc.pid})`}
+                                  >
+                                    <XCircle className="h-3.5 w-3.5" />
+                                    {executingCommand === `command=kill_pid&pid=${proc.pid}` ? "Matando..." : "Matar"}
+                                  </Button>
                                 )}
-                              </span>
-                              <span className={`text-xs ${isLastActive ? "text-blue-600" : "text-slate-400"}`}>
-                                {proc.mem_mb?.toFixed(1)} MB
-                              </span>
+                              </div>
                             </li>
                           );
                         })}
@@ -497,41 +520,37 @@ export default function Dashboard() {
                       Ações de Controle
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Teclado */}
-                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150">
-                        <span className="text-xs font-semibold text-slate-500 gap-1">
-
-                          <Keyboard className="h-3.5 w-3.5" /> Teclado
-                        </span>
-                        <span className="text-xs font-semibold text-slate-500">
-                          <MousePointer className="h-3.5 w-3.5" /> Mouse
+                      {/* Teclado e Mouse */}
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-2">
+                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                          <Keyboard className="h-3.5 w-3.5" />
+                          <MousePointer className="h-3.5 w-3.5" /> Teclado / Mouse
                         </span>
                         <div className="flex gap-2">
                           <Button
                             className="flex-1 text-xs"
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "block_mouseAndKeyboard")}
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "command=lock_mouseAndKeyboard")}
                             disabled={executingCommand !== null}
                           >
-                            {executingCommand === "block_mouseAndKeyboard" ? "Bloqueando..." : "Bloquear"}
+                            {executingCommand === "command=lock_mouseAndKeyboard" ? "Bloqueando..." : "Bloquear"}
                           </Button>
                           <Button
                             className="flex-1 text-xs"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "unblock_mouseAndKeyboard")}
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "command=unlock_mouseAndKeyboard")}
                             disabled={executingCommand !== null}
                           >
                             <Unlock className="mr-1 h-3 w-3" />
-                            {executingCommand === "unblock_mouseAndKeyboard" ? "Desbloqueando..." : "Desbloquear"}
+                            {executingCommand === "command=unlock_mouseAndKeyboard" ? "Desbloqueando..." : "Desbloquear"}
                           </Button>
                         </div>
                       </div>
 
-
                       {/* Monitor / Tela */}
-                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-2 sm:col-span-2">
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-2">
                         <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
                           <MonitorOff className="h-3.5 w-3.5" /> Monitor / Tela
                         </span>
@@ -540,20 +559,20 @@ export default function Dashboard() {
                             className="flex-1 text-xs"
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "block_monitor")}
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "command=lock_monitor")}
                             disabled={executingCommand !== null}
                           >
-                            {executingCommand === "block_monitor" ? "Desativando..." : "Apagar Tela"}
+                            {executingCommand === "command=lock_monitor" ? "Desativando..." : "Apagar Tela"}
                           </Button>
                           <Button
                             className="flex-1 text-xs"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "unblock_monitor")}
+                            onClick={() => handleSendCommand(selectedAgent.agent_uuid, "command=unlock_monitor")}
                             disabled={executingCommand !== null}
                           >
                             <Unlock className="mr-1 h-3 w-3" />
-                            {executingCommand === "unblock_monitor" ? "Reativando..." : "Ligar Tela"}
+                            {executingCommand === "command=unlock_monitor" ? "Reativando..." : "Ligar Tela"}
                           </Button>
                         </div>
                       </div>

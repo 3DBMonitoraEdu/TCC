@@ -43,36 +43,38 @@ func getPidWithWindow() ([]uint32, error) {
 }
 
 func CollectProcesses() ([]ProcessInfo, error) {
-	procs, err := getPidWithWindow()
+	processes, err := process.Processes()
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]ProcessInfo, 0, len(procs))
-	for _, p := range procs {
-		pInt := int32(p)
-		proc, err := process.NewProcess(pInt)
-		if err != nil {
-			continue
-		}
+	result := make([]ProcessInfo, 0, 10) // Pega ex: top 10 ou top 15
+
+	for _, proc := range processes {
 		name, err := proc.Name()
 		if err != nil || name == "" {
 			continue
 		}
 
+		// Pega memória (sem precisar passar por OpenFiles / permissões de FD)
 		var memMB float64
 		if memInfo, err := proc.MemoryInfo(); err == nil && memInfo != nil {
 			memMB = float64(memInfo.RSS) / 1024 / 1024
 		}
 
-		createTimeMs, err := proc.CreateTime()
-		if err != nil {
+		// Se quiser filtrar processos irrelevantes/muito pequenos
+		if memMB < 10.0 {
 			continue
 		}
-		createTime := time.UnixMilli(createTimeMs)
+
+		createTimeMs, _ := proc.CreateTime()
+		var createTime time.Time
+		if createTimeMs > 0 {
+			createTime = time.UnixMilli(createTimeMs)
+		}
 
 		result = append(result, ProcessInfo{
-			PID:       pInt,
+			PID:       proc.Pid,
 			Name:      name,
 			MemMB:     memMB,
 			CreatedAt: createTime,

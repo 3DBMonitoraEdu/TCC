@@ -32,8 +32,8 @@ app.get("/health", (req, res) => {
 app.use("/auth", authRouter);
 app.use("/agents", agentsRouter);
 
-app.use("/command", commandRouter)
 app.use(requireAuth); // as rotas a baixo irão passar pelo middleware requireAuth
+app.use("/command", commandRouter)
 
 app.use("/rooms", roomsRouter);
 

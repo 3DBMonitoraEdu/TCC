@@ -7,7 +7,6 @@ import (
 
 	"context"
 	"log"
-
 	"runtime"
 	"time"
 )
@@ -18,10 +17,8 @@ func main() {
 	case "windows":
 		configPath = "C:\\ProgramData\\MoniTec\\config.json"
 
-
 	case "linux":
 		configPath = "/tmp/MoniTec"
-
 
 	}
 	_, err := setup.CheckJoinCode(configPath)

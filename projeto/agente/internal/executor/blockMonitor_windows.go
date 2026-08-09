@@ -53,6 +53,7 @@ var (
 	setFocus            = user32.NewProc("SetFocus")
 
 	wndProcCallback = syscall.NewCallback(wndProc)
+	unregisterClass = user32.NewProc("UnregisterClassW")
 )
 
 const (
@@ -251,6 +252,11 @@ func createWindow() {
 		dispatchMessage.Call(uintptr(unsafe.Pointer(&m)))
 	}
 	deleteObject.Call(blueBrush)
+
+	unregisterClass.Call(
+		uintptr(unsafe.Pointer(className)),
+		instace,
+	)
 }
 
 func closeWindow() uintptr {
@@ -258,21 +264,29 @@ func closeWindow() uintptr {
 	return ret
 }
 
-func blockMonitorByWindow(ctx context.Context) error {
+func LockMonitorByWindow(ctx context.Context) error {
 	log.Println("bloquear monitor")
 	go createWindow()
-	BlockMouseAndKeyboard(ctx)
+	params := make(map[string]int32)
+	LockMouseAndKeyboard(ctx, params)
 	return nil
 }
 
-func unBlockMonitorByWindow(ctx context.Context) error {
+func unLockMonitorByWindow(ctx context.Context) error {
 	log.Println("desbloquear monitor")
 	if blockHwnd != 0 {
 		closeWindow()
 		blockHwnd = 0
 	}
-	UnBlockMouseAndKeyboard(ctx)
+	params := make(map[string]int32)
+	UnlockMouseAndKeyboard(ctx, params)
 	return nil
 }
-func BlockMonitor(ctx context.Context) error   { return blockMonitorByWindow(ctx) }
-func UnBlockMonitor(ctx context.Context) error { return unBlockMonitorByWindow(ctx) }
+
+func LockMonitor(ctx context.Context, params map[string]int32) error {
+	return LockMonitorByWindow(ctx)
+}
+
+func UnlockMonitor(ctx context.Context, param map[string]int32) error {
+	return unLockMonitorByWindow(ctx)
+}
