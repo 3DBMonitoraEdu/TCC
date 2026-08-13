@@ -208,6 +208,13 @@ export default function Dashboard() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             )}
+
+            <img
+              src="/iconepaginas.png"
+              alt="Monitoramento Escolar"
+              className="h-14 w-auto object-contain"
+            />
+
             <div>
               <h1 className="text-3xl font-bold text-slate-900">
                 {selectedAgent
@@ -459,11 +466,10 @@ export default function Dashboard() {
                           return (
                             <li
                               key={index}
-                              className={`flex items-center justify-between text-sm p-2 rounded-md border ${
-                                isLastActive
+                              className={`flex items-center justify-between text-sm p-2 rounded-md border ${isLastActive
                                   ? "text-blue-900 bg-blue-50 border-blue-200 font-medium"
                                   : "text-slate-700 bg-slate-50 border-slate-100"
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center gap-3">
                                 <span className="flex items-center gap-2">
