@@ -611,7 +611,10 @@ export default function Dashboard() {
             <Button
               variant="outline"
               onClick={() => {
-                setIsAddRoomOpen(false);
+                setIsAddRoomOpen(
+                  false
+                );
+
                 setNewRoomName("");
               }}
             >
