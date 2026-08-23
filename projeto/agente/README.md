@@ -12,17 +12,16 @@ Este diretório contém o código-fonte do **agente local** do sistema MoniTec. 
 
 ## 📑 Sumário
 
-- [Sobre o Agente](#sobre-o-agente)
+- [Sobre o Agente](#sobre)
 - [dependências](#dependências)
-- [Arquitetura e Fluxo de Comunicação](#arquitetura-e-fluxo-de-comunicação)
-- [Pré-requisitos](#pré-requisitos)
+- [Arquitetura e Fluxo de Comunicação](#arquitetura)
+- [Pré-requisitos](#requisitos)
 - [Instalação e Compilação](#instalação-e-compilação)
-- [Configuração](#configuração)
-- [Screenshots e Evidências](#screenshots-e-evidências)
+- [Screenshots](#screenshots)
 
 ---
 
-## 📖 Sobre o Agente
+## sobre
 
 O agente é o componente periférico do MoniTec, executado em segundo plano nos PCs dos alunos. Ele foi projetado para ser **leve, autônomo e de fácil distribuição**.
 
@@ -37,7 +36,7 @@ shirou/gopsutil/v3 v3.24.5
 
 ---
 
-## 🏗️ Arquitetura e Fluxo de Comunicação
+## arquitetura
 
 O agente se comunica exclusivamente com o **servidor central** via requisições HTTP periódicas (polling).
 
@@ -56,7 +55,7 @@ O agente se comunica exclusivamente com o **servidor central** via requisições
 ---
 
 
-## 📋 Pré-requisitos
+## requisitos
 
 - [Go](https://golang.org/dl/) instalado (versão `1.26.4x` ou superior);
 - Acesso à rede local/internet para comunicação com o servidor;
@@ -64,11 +63,14 @@ O agente se comunica exclusivamente com o **servidor central** via requisições
 
 ---
 
-## 🚀 Instalação e Compilação
+## instalação-e-compilação
 
-## install setup
+## install setup (faster)
   [MoniTecSetup para Windows](https://github.com/3DBMonitoraEdu/TCC/releases/latest)
   
+---
+## Compilar
+
 ### Clonar o repositório e Compilar
 
 ```bash
@@ -76,7 +78,7 @@ git clone https://github.com/3DBMonitoraEdu/TCC.git
 cd TCC/projeto/agente/
 ```
 
-### Compilar para o sistema operacional atual
+### Compilar
 
 ```bash
 go build -o build/agente.exe cmd/agente/main.go
@@ -112,7 +114,7 @@ o "interval_secs" serve para alterar o tempo de comunicação do agente com o se
 
 ---
 
-## 📸 Screenshots e Evidências
+## screenshots
 
 ![lockMonitor](lockMonitor.png)
 
