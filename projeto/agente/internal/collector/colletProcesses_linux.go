@@ -21,7 +21,7 @@ func getPidWithWindow() ([]uint32, error) {
 		// Pega os arquivos e sockets abertos pelo processo
 		openFiles, err := proc.OpenFiles()
 		if err != nil {
-			continue // Ignora processos dos quais não temos permissão de leitura
+			continue // Ignora processos dos quais nao temos permissao de leitura
 		}
 
 		for _, f := range openFiles {
@@ -39,34 +39,28 @@ func getPidWithWindow() ([]uint32, error) {
 	}
 
 	return pids, nil
-
 }
 
-func CollectProcesses() ([]ProcessInfo, error) {
-	processes, err := process.Processes()
+func CollectUserProcesses() ([]ProcessInfo, error) {
+	pids, err := getPidWithWindow()
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]ProcessInfo, 0, 10) // Pega ex: top 10 ou top 15
-
-	for _, proc := range processes {
+	result := make([]ProcessInfo, 0, len(pids))
+	for _, pid := range pids {
+		proc, err := process.NewProcess(int32(pid))
+		if err != nil {
+			continue
+		}
 		name, err := proc.Name()
 		if err != nil || name == "" {
 			continue
 		}
-
-		// Pega memória (sem precisar passar por OpenFiles / permissões de FD)
 		var memMB float64
 		if memInfo, err := proc.MemoryInfo(); err == nil && memInfo != nil {
 			memMB = float64(memInfo.RSS) / 1024 / 1024
 		}
-
-		// Se quiser filtrar processos irrelevantes/muito pequenos
-		if memMB < 10.0 {
-			continue
-		}
-
 		createTimeMs, _ := proc.CreateTime()
 		var createTime time.Time
 		if createTimeMs > 0 {
@@ -74,12 +68,16 @@ func CollectProcesses() ([]ProcessInfo, error) {
 		}
 
 		result = append(result, ProcessInfo{
-			PID:       proc.Pid,
+			PID:       int32(pid),
 			Name:      name,
 			MemMB:     memMB,
 			CreatedAt: createTime,
 		})
 	}
-
 	return result, nil
 }
+
+func CollectProcesses() ([]ProcessInfo, error) {
+	return CollectUserProcesses()
+}
+

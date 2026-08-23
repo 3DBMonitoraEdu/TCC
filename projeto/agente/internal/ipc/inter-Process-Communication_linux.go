@@ -2,7 +2,9 @@
 
 package ipc
 
-import "context"
+import (
+	"context"
+)
 
 type Command struct {
 	Data string `json:"data"`
@@ -16,3 +18,17 @@ func StartComandoPipeServer(cmdChan <-chan Command) error {
 	return nil
 }
 
+func SendReport(report ProcessReport) error {
+	return nil
+}
+
+func StartReportPipeServer() error {
+	return nil
+}
+
+// func GetLatestReport() ProcessReport {
+func GetLatestReport() ProcessReport {
+	var latestReport ProcessReport
+
+	return latestReport
+}

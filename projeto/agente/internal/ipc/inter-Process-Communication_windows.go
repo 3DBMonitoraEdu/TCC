@@ -20,6 +20,8 @@ type Command struct {
 
 const pipeName = `\\.\pipe\MonitorEduCmd`
 
+const reportPipeName = `\\.\pipe\MonitorEduReport`
+
 type pipeClient struct {
 	conn net.Conn
 	ch   chan Command
@@ -28,7 +30,72 @@ type pipeClient struct {
 var (
 	muClients sync.Mutex
 	clients   = make(map[*pipeClient]struct{})
+
+	latestReport    ProcessReport
+	muReport        sync.RWMutex
+	reportAvailable = make(chan struct{}, 1)
 )
+
+func handleReportConnection(conn net.Conn) {
+	defer conn.Close()
+	decoder := json.NewDecoder(conn)
+	for {
+		var report ProcessReport
+		if err := decoder.Decode(&report); err != nil {
+			return
+		}
+		muReport.Lock()
+		latestReport = report
+		muReport.Unlock()
+		select {
+		case reportAvailable <- struct{}{}:
+		default:
+		}
+	}
+}
+
+func StartReportPipeServer() error {
+	config := &winio.PipeConfig{
+		SecurityDescriptor: "D:P(A;;GA;;;SY)(A;;GA;;;AU)",
+	}
+	listener, err := winio.ListenPipe(reportPipeName, config)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				if errors.Is(err, winio.ErrPipeListenerClosed) {
+					return
+				}
+				continue
+			}
+			go handleReportConnection(conn)
+		}
+	}()
+	return nil
+}
+
+// GetLatestReport: agente principal pega os últimos PIDs recebidos
+func GetLatestReport() ProcessReport {
+	muReport.RLock()
+	defer muReport.RUnlock()
+	return latestReport
+}
+
+// SendReport: agente-session envia PIDs de volta
+func SendReport(report ProcessReport) error {
+	conn, err := winio.DialPipe(reportPipeName, nil)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	encoder := json.NewEncoder(conn)
+	return encoder.Encode(report)
+}
 
 func StartComandoPipeServer(cmdChan <-chan Command) error {
 	config := &winio.PipeConfig{

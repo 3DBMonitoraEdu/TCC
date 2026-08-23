@@ -11,6 +11,8 @@ import (
 	"agente/internal/setup"
 
 	"agente/internal/ipc"
+
+	"github.com/shirou/gopsutil/v3/process"
 )
 
 type Agent struct {
@@ -42,6 +44,11 @@ func New(cfgPath string) (*Agent, error) {
 		log.Printf("⚠️ Erro ao iniciar servidor de Named Pipe: %v", err)
 	}
 
+	// Inicia servidor de relatórios para receber PIDs do agente-session
+	if err := ipc.StartReportPipeServer(); err != nil {
+		log.Printf("⚠️ Erro ao iniciar servidor de relatórios: %v", err)
+	}
+
 	return &Agent{
 		cfg:      _cfg,
 		client:   apiclient.New(_cfg.ServerURL),
@@ -69,6 +76,40 @@ func (a *Agent) collect() {
 	if err != nil {
 		log.Printf("erro ao coletar metricas: %v", err)
 		return
+	}
+
+	// Substitui processos pelo relatório do agente-session
+	report := ipc.GetLatestReport()
+	if len(report.PIDs) > 0 {
+		userProcs := make([]collector.ProcessInfo, 0, len(report.PIDs))
+		for _, pid := range report.PIDs {
+			pInt := int32(pid)
+			proc, err := process.NewProcess(pInt)
+			if err != nil {
+				continue
+			}
+			name, err := proc.Name()
+			if err != nil || name == "" {
+				continue
+			}
+			var memMB float64
+			if memInfo, err := proc.MemoryInfo(); err == nil && memInfo != nil {
+				memMB = float64(memInfo.RSS) / 1024 / 1024
+			}
+			createTimeMs, err := proc.CreateTime()
+			if err != nil {
+				continue
+			}
+			userProcs = append(userProcs, collector.ProcessInfo{
+				PID:       pInt,
+				Name:      name,
+				MemMB:     memMB,
+				CreatedAt: time.UnixMilli(createTimeMs),
+			})
+		}
+		metrics.Processes = userProcs
+	} else if len(metrics.Processes) == 0 {
+		metrics.Processes = []collector.ProcessInfo{}
 	}
 
 	log.Printf("coletado — CPU: %.1f%% RAM: %.1f%% Disco: %.1f%% Processos: %d",
@@ -102,4 +143,3 @@ func (a *Agent) collect() {
 func (a *Agent) Stop() {
 	log.Printf("parando agente...")
 }
-

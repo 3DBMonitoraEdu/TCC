@@ -1,6 +1,7 @@
 package main
 
 import (
+	"agente/internal/collector"
 	"agente/internal/executor"
 	"agente/internal/ipc"
 	"agente/internal/setup"
@@ -32,6 +33,28 @@ func main() {
 
 	// Start listening for commands in the background
 	go ipc.ListenForCommands(ctx, cmdChan)
+
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			procs, err := collector.CollectProcesses()
+			if err != nil {
+				log.Printf("erro ao coletar processos do usuário: %v", err)
+				continue
+			}
+			pids := make([]uint32, len(procs))
+			for i, p := range procs {
+				pids[i] = uint32(p.PID)
+			}
+			report := ipc.ProcessReport{PIDs: pids}
+			if err := ipc.SendReport(report); err != nil {
+				log.Printf("erro ao enviar relatório: %v", err)
+			} else {
+				log.Printf("enviado %d processos do usuário", len(pids))
+			}
+		}
+	}()
 
 	log.Println("Agente de sessão iniciado. Aguardando comandos...")
 
