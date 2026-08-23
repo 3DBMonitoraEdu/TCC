@@ -1,4 +1,4 @@
-import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
+import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -42,18 +42,27 @@ export default function Login() {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#020817] p-4">
 
-      <AnimatedGridPattern
-        numSquares={40}
-        maxOpacity={0.45}
-        duration={2}
-        repeatDelay={0.3}
+      <InteractiveGridPattern
+        width={40}
+        height={40}
+        squares={[45, 45]}
+        squaresClassName="
+        fill-transparent
+        stroke-white/10
+        transition-[fill,stroke]
+        duration-700
+        ease-out
+        hover:duration-75
+        hover:fill-blue-500/25
+        hover:stroke-blue-400/50
+        "
         className={cn(
-          "[mask-image:radial-gradient(900px_circle_at_center,white,transparent)]",
-          "absolute -top-20 inset-x-0 h-[200%] w-full skew-y-12"
-        )}
-      />
+         "[mask-image:radial-gradient(900px_circle_at_center,white,transparent)]",
+         "absolute -top-20 inset-x-0 h-[200%] w-full skew-y-12"
+     )}
+    />
 
-      <div className="absolute h-[500px] w-[500px] rounded-full bg-blue-600/15 blur-[120px]" />
+      <div className="pointer-events-none absolute h-[500px] w-[500px] rounded-full bg-blue-600/15 blur-[120px]" />
 
       <div className="relative z-10 flex flex-col items-center -translate-y-12 animate-in fade-in zoom-in-95 duration-700">
         <img
