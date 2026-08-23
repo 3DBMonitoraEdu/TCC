@@ -42,29 +42,46 @@ export default function Login() {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#020817] p-4">
 
-      <InteractiveGridPattern
-        width={40}
-        height={40}
-        squares={[45, 45]}
-        squaresClassName="
+    <InteractiveGridPattern
+      width={40}
+      height={40}
+      squares={[45, 45]}
+      squaresClassName="
         fill-transparent
         stroke-white/10
         transition-[fill,stroke]
-        duration-700
+        duration-[900ms]
         ease-out
         hover:duration-75
         hover:fill-blue-500/25
         hover:stroke-blue-400/50
+       "
+       className={cn(
+        "[mask-image:radial-gradient(900px_circle_at_center,white,transparent)]",
+        "absolute -top-20 inset-x-0 h-[200%] w-full skew-y-12"
+       )}
+      />
+
+      
+      <a
+        href="/argentino.jpg"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Easter egg"
+        className="
+          absolute
+         left-[25%]
+         top-[35%]
+         z-[5]
+         h-[42px]
+         w-[42px]
+         cursor-pointer
         "
-        className={cn(
-         "[mask-image:radial-gradient(900px_circle_at_center,white,transparent)]",
-         "absolute -top-20 inset-x-0 h-[200%] w-full skew-y-12"
-     )}
-    />
+       />
 
-      <div className="pointer-events-none absolute h-[500px] w-[500px] rounded-full bg-blue-600/15 blur-[120px]" />
+<div className="pointer-events-none absolute h-[500px] w-[500px] rounded-full bg-blue-600/15 blur-[120px]" />
 
-      <div className="relative z-10 flex flex-col items-center -translate-y-12 animate-in fade-in zoom-in-95 duration-700">
+<div className="relative z-10 flex flex-col items-center -translate-y-12 ...">
         <img
           src="/iconepaginas.png"
           alt="Monitoramento Escolar"
