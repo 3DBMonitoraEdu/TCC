@@ -73,14 +73,21 @@ export default function Signup() {
       <div className="relative z-10 flex flex-col items-center -translate-y-[40px] animate-in fade-in zoom-in-95 duration-700">
 
         {}
-        <img
-          src="/iconepaginas.png"
-          alt="Monitoramento Escolar"
-          className="mb-6 h-28 w-auto object-contain"
-        />
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="mb-6 cursor-pointer transition-transform duration-200 hover:scale-105"
+          aria-label="Voltar para a Home"
+        >
+          <img
+            src="/iconepaginas.png"
+            alt="Monitoramento Escolar"
+            className="h-28 w-auto object-contain"
+          />
+        </button>
 
         {}
-        <Card className="w-full max-w-lg border border-white/20 bg-white/85 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <Card className="w-full max-w-2xl border border-white/20 bg-white/85 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
 
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold text-blue-700">
@@ -101,52 +108,56 @@ export default function Signup() {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome do Professor</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Seu nome completo"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="professor@escola.edu.br"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome do Professor</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Seu nome completo"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mail</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="professor@escola.edu.br"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="school">Nome da Escola Pública</Label>
-                <Input
-                  id="school"
-                  type="text"
-                  placeholder="Ex: E.E. Professor João Silva"
-                  value={school}
-                  onChange={(e) => setSchool(e.target.value)}
-                  required
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="school">Nome da Escola Pública</Label>
+                  <Input
+                    id="school"
+                    type="text"
+                    placeholder="Ex: E.E. Professor João Silva"
+                    value={school}
+                    onChange={(e) => setSchool(e.target.value)}
+                    required
+                  />
+                </div>
+
               </div>
 
             </CardContent>

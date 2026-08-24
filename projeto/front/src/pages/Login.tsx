@@ -82,11 +82,18 @@ export default function Login() {
 <div className="pointer-events-none absolute h-[500px] w-[500px] rounded-full bg-blue-600/15 blur-[120px]" />
 
 <div className="relative z-10 flex flex-col items-center -translate-y-12 ...">
-        <img
-          src="/iconepaginas.png"
-          alt="Monitoramento Escolar"
-          className="mb-6 h-32 w-auto object-contain"
-        />
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="mb-6 cursor-pointer transition-transform duration-200 hover:scale-105"
+            aria-label="Voltar para a Home"
+          >
+            <img
+              src="/iconepaginas.png"
+              alt="Monitoramento Escolar"
+              className="h-32 w-auto object-contain"
+            />
+          </button>
         <Card className="w-full max-w-md border border-white/20 bg-white/85 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold text-blue-700">
