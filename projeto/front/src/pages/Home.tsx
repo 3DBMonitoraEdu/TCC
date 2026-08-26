@@ -61,32 +61,51 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f4f4] text-[#071a36]">
-      <section className="relative overflow-hidden bg-[#061a35] text-white">
-        <div className="mx-auto max-w-[1180px] px-5 py-4 sm:px-8 lg:px-10">
-          <div className="flex justify-end gap-2.5">
-            <button
-              onClick={() => navigate("/login")}
-              className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
-            >
-              Entrar
-            </button>
-            <button
-              onClick={() => navigate("/signup")}
-              className="rounded-full bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#061a35] transition hover:bg-slate-100"
-            >
-              Cadastro
-            </button>
+  <div className="min-h-screen bg-[#f4f4f4] text-[#071a36]">
 
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
-            >
-              Minhas salas
-            </button>
-          </div>
+    <header
+      className="
+        fixed
+        inset-x-0
+        top-0
+        z-50
+        border-b
+        border-white/10
+        bg-[#061a35]/90
+        backdrop-blur-md
+      "
+    >
+      <div className="mx-auto max-w-[1180px] px-5 py-4 sm:px-8 lg:px-10">
+        <div className="flex justify-end gap-2.5">
 
-          <div className="grid min-h-[500px] items-center gap-8 pb-10 pt-2 lg:grid-cols-2">
+          <button
+            onClick={() => navigate("/login")}
+            className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
+          >
+            Entrar
+          </button>
+
+          <button
+            onClick={() => navigate("/signup")}
+            className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
+          >
+            Cadastro
+          </button>
+
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
+          >
+            Minhas salas
+          </button>
+
+        </div>
+      </div>
+    </header>
+    <section className="relative overflow-hidden bg-[#061a35] text-white">
+      <div className="mx-auto max-w-[1180px] px-5 pb-4 pt-20 sm:px-8 lg:px-10">
+
+        <div className="grid min-h-[500px] items-center gap-8 pb-10 pt-2 lg:grid-cols-2">
             <div className="relative z-10 max-w-[560px]">
               <h1 className="text-4xl font-extrabold leading-[1.04] sm:text-5xl lg:text-6xl">
                 Monitoramento em
@@ -110,15 +129,15 @@ export default function Home() {
             </div>
 
             <div className="relative flex min-h-[370px] items-center justify-center">
-              <div className="absolute h-[330px] w-[330px] rounded-full bg-[#0a2c56] sm:h-[370px] sm:w-[370px] lg:h-[410px] lg:w-[410px]" />
+              <div className="absolute h-[300px] w-[300px] rounded-full bg-[#0a2c56] sm:h-[330px] sm:w-[370px] lg:h-[380px] lg:w-[380px]" />
 
-              <div className="relative z-10 grid w-full max-w-[390px] grid-cols-2 rounded-xl bg-[#0b2b50]/90 px-6 py-5 text-center shadow-sm">
+              <div className="relative z-10 grid w-full max-w-[340px] grid-cols-2 rounded-xl bg-[#0b2b50]/90 px-6 py-5 text-center shadow-sm">
                 <div className="border-r border-[#17416f]">
-                  <div className="text-2xl font-extrabold">100%</div>
+                  <div className="text-5xl font-extrabold">100%</div>
                   <div className="mt-2 text-sm text-[#9cafc7]">acessibilidade</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-extrabold">24/7</div>
+                  <div className="text-5xl font-extrabold">24/7</div>
                   <div className="mt-2 text-sm text-[#9cafc7]">monitoramento</div>
                 </div>
               </div>
@@ -227,6 +246,7 @@ export default function Home() {
             bg-transparent
             transition-all
             duration-200
+            rounded-2xl
             cursor-pointer
             hover:border-[#0b2748]
             hover:bg-[#cfe3f1]
@@ -294,6 +314,7 @@ export default function Home() {
             <div>
               <h4 className="text-[11px] font-bold uppercase text-[#2e84dc]">Contato</h4>
               <div className="mt-4 space-y-3 text-xs text-[#c3cedd]">
+                <p>Fale com a Monitec</p>
                 <a
                  href="https://github.com/3DBMonitoraEdu"
                  target="_blank"
@@ -302,7 +323,6 @@ export default function Home() {
                 >
                  3DBMonitoraEdu
                 </a>
-                <p>Fale com a Monitec</p>
                 <p>Avalie na Google</p>
               </div>
             </div>
