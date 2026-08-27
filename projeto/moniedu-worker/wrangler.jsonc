@@ -23,7 +23,8 @@
 			"database_name": "moniedu",
 			"database_id": "ce3ee3dd-4df6-48d8-a117-fb5b5351c356"
 		}
-	]
+	],
+	"compatibility_flags": ["nodejs_compat"]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
