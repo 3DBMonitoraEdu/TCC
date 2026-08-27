@@ -21,6 +21,9 @@ export const auth = betterAuth({
 		max: 100,
 	},
 	advanced: {
+		ipAddress: {
+			ipAddressHeaders: ["cf-connecting-ip"],
+		},
 		defaultCookieAttributes: {
 			sameSite: "None",
 			secure: true,
@@ -28,6 +31,5 @@ export const auth = betterAuth({
 		}
 	}
 });
-
 
 

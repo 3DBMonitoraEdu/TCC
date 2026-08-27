@@ -1,29 +1,31 @@
-import {
-	env,
-	createExecutionContext,
-	waitOnExecutionContext,
-	SELF,
-} from "cloudflare:test";
+import { SELF } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
-import worker from "../src/index";
 
-// For now, you'll need to do something like this to get a correctly-typed
-// `Request` to pass to `worker.fetch()`.
-const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
+describe("authentication", () => {
+	it("creates a user through the email signup route", async () => {
+		const response = await SELF.fetch(
+			"http://localhost/api/auth/sign-up/email",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"CF-Connecting-IP": "203.0.113.10",
+					Origin: "http://localhost:3000",
+				},
+				body: JSON.stringify({
+					name: "Test User",
+					email: "test@example.com",
+					password: "StrongPass123!",
+				}),
+			},
+		);
 
-describe("Hello World worker", () => {
-	it("responds with Hello World! (unit style)", async () => {
-		const request = new IncomingRequest("http://example.com");
-		// Create an empty context to pass to `worker.fetch()`.
-		const ctx = createExecutionContext();
-		const response = await worker.fetch(request, env, ctx);
-		// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
-		await waitOnExecutionContext(ctx);
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
-	});
-
-	it("responds with Hello World! (integration style)", async () => {
-		const response = await SELF.fetch("https://example.com");
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+		expect(response.status).toBe(200);
+		expect(await response.json()).toMatchObject({
+			user: {
+				name: "Test User",
+				email: "test@example.com",
+			},
+		});
 	});
 });
