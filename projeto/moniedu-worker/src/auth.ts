@@ -12,6 +12,7 @@ export const auth = betterAuth({
 	],
 	emailAndPassword: {
 		enabled: true,
+		//disableSignUp: true,
 	},
 	rateLimit: {
 		enabled: true,
@@ -26,8 +27,6 @@ export const auth = betterAuth({
 			httpOnly: true,
 		}
 	}
-
-
 });
 
 

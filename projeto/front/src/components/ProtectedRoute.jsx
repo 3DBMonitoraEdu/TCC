@@ -1,10 +1,16 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext.jsx";
+import { authClient } from "@/lib/auth-client";
 
 export function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { data, isPending } = authClient.useSession();
 
-  if (!isAuthenticated) {
+  if (isPending) {
+    return <main className="flex min-h-screen items-center justify-center bg-[#070914] text-sm text-slate-400">
+        {data ? "Entrando ..." : "Verificando sua sessão..."}
+      </main>
+  }
+
+  if (!data) {
     return <Navigate to="/login" replace />;
   }
 

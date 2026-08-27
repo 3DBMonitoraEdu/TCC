@@ -1,0 +1,93 @@
+-- Migration number: 0002 	 2026-08-27T07:13:53.268Z
+
+-- Escolas
+CREATE TABLE IF NOT EXISTS schools (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Professores
+CREATE TABLE IF NOT EXISTS teachers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  school_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+);
+
+-- Salas
+CREATE TABLE IF NOT EXISTS rooms (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  school_id INTEGER NOT NULL,
+  teacher_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  join_code TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+  FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
+);
+
+-- Agentes (computadores)
+CREATE TABLE IF NOT EXISTS agents (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  room_id INTEGER NOT NULL,
+  agent_uuid TEXT NOT NULL UNIQUE,
+  hostname TEXT,
+  last_seen_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
+);
+
+-- Snapshots de metricas
+CREATE TABLE IF NOT EXISTS metrics (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agent_id INTEGER NOT NULL,
+  cpu_percent REAL NOT NULL,
+  mem_percent REAL NOT NULL,
+  mem_used_mb INTEGER NOT NULL,
+  mem_total_mb INTEGER NOT NULL,
+  disk_percent REAL NOT NULL,
+  disk_used_gb REAL NOT NULL,
+  disk_total_gb REAL NOT NULL,
+  collected_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE CASCADE
+);
+
+-- Processos por snapshot
+CREATE TABLE IF NOT EXISTS processes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  metric_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  pid INTEGER,
+  mem_mb REAL,
+  created_at TEXT ,
+  FOREIGN KEY (metric_id) REFERENCES metrics(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  teacher_id INTEGER NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (teacher_id) REFERENCES teachers(id)
+);
+
+CREATE TABLE IF NOT EXISTS command (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_uuid TEXT NOT NULL UNIQUE,
+    status INTEGER NOT NULL DEFAULT (1), -- 1 = pendente, 0 = executado
+    command TEXT NOT NULL,               -- nome do comando a executar
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Indices para consultas frequentes
+CREATE INDEX IF NOT EXISTS idx_metrics_agent_id ON metrics(agent_id);
+CREATE INDEX IF NOT EXISTS idx_metrics_collected_at ON metrics(collected_at);
+CREATE INDEX IF NOT EXISTS idx_processes_metric_id ON processes(metric_id);
+CREATE INDEX IF NOT EXISTS idx_agents_room_id ON agents(room_id);
+
+

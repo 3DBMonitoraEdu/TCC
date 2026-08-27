@@ -1,0 +1,23 @@
+-- Migration number: 0004 	 2026-08-27T07:43:25.941Z
+
+DROP TABLE IF EXISTS rooms;
+
+-- Salas
+CREATE TABLE IF NOT EXISTS rooms (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  school_id INTEGER NOT NULL,
+  teacher_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  join_code TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+  FOREIGN KEY (teacher_id) REFERENCES user(id) ON DELETE CASCADE
+);
+
+
+
+ALTER TABLE user ADD COLUMN schoolId INTEGER REFERENCES schools(id) ON DELETE CASCADE;
+
+
+
+

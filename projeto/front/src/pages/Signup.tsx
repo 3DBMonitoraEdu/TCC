@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext.jsx";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,6 @@ import { UserPlus } from "lucide-react";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { signup } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -32,14 +31,16 @@ export default function Signup() {
     setError("");
     setLoading(true);
 
-    try {
-      await signup({ name, email, password, schoolName: school });
-      navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Erro ao criar conta");
-    } finally {
+    const result = await authClient.signUp.email({ name, email, password });
+
+    if (result.error) {
+      setError(result.error.message);
       setLoading(false);
+      return;
     }
+
+    navigate('/dashboard');
+
   };
 
   return (

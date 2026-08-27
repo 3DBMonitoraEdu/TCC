@@ -2,7 +2,7 @@ import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext.jsx";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,6 @@ import { LogIn } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -29,14 +28,20 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-    try {
-      await login({ email, password });
-      navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Erro ao fazer login");
-    } finally {
+    const result = await authClient.signIn.email({
+      email,
+      password,
+      rememberMe: true,
+      callbackURL: '/dashboard'
+    });
+
+    if (result.error) {
+      setError(result.error.message);
       setLoading(false);
+      return;
     }
+
+    navigate("/dashboard");
   };
 
   return (
