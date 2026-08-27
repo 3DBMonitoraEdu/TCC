@@ -1,0 +1,8 @@
+{
+  "agent_uuid": "",
+  "join_code": "",
+  "server_url": "http://192.168.15.13:4040",
+  "interval_secs": 30,
+  "disk_path": "C:\\",
+  "blocked_hosts": []
+}

@@ -15,6 +15,7 @@ import (
 
 var (
 	kernel32 = windows.NewLazySystemDLL("kernel32.dll")
+	gdi32    = windows.NewLazySystemDLL("gdi32.dll")
 
 	registerClassEx  = user32.NewProc("RegisterClassExW")
 	createWindowEx   = user32.NewProc("CreateWindowExW")
@@ -32,7 +33,27 @@ var (
 	setWindowPos     = user32.NewProc("SetWindowPos")
 	destroyWindow    = user32.NewProc("DestroyWindow")
 
+	createSolidBrush = gdi32.NewProc("CreateSolidBrush")
+	setTextColor     = gdi32.NewProc("SetTextColor")
+	setBkMode        = gdi32.NewProc("SetBkMode")
+	createFont       = gdi32.NewProc("CreateFontW")
+	selectObject     = gdi32.NewProc("SelectObject")
+	deleteObject     = gdi32.NewProc("DeleteObject")
+
+	beginPaint    = user32.NewProc("BeginPaint")
+	endPaint      = user32.NewProc("EndPaint")
+	getClientRect = user32.NewProc("GetClientRect")
+	drawText      = user32.NewProc("DrawTextW")
+
 	sendMessage = user32.NewProc("SendMessageW")
+
+	setProcessDPIAware  = user32.NewProc("SetProcessDPIAware")
+	setForegroundWindow = user32.NewProc("SetForegroundWindow")
+	setActiveWindow     = user32.NewProc("SetActiveWindow")
+	setFocus            = user32.NewProc("SetFocus")
+
+	wndProcCallback = syscall.NewCallback(wndProc)
+	unregisterClass = user32.NewProc("UnregisterClassW")
 )
 
 const (
@@ -57,6 +78,18 @@ const (
 	smCyScreen = 1
 
 	WM_CLOSE = 0x0010
+
+	WM_PAINT      = 0x000F
+	DT_CENTER     = 0x00000001
+	DT_VCENTER    = 0x00000004
+	DT_SINGLELINE = 0x00000020
+
+	WS_EX_TOPMOST = 0x00000008
+
+	SM_XVIRTUALSCREEN  = 76
+	SM_YVIRTUALSCREEN  = 77
+	SM_CXVIRTUALSCREEN = 78
+	SM_CYVIRTUALSCREEN = 79
 )
 
 type wndClassEx struct {
@@ -74,53 +107,140 @@ type wndClassEx struct {
 	HIconSm       windows.Handle
 }
 
+type rect struct {
+	Left   int32
+	Top    int32
+	Right  int32
+	Bottom int32
+}
+
+type paintStruct struct {
+	Hdc         uintptr
+	FErase      int32
+	RcPaint     rect
+	FRestore    int32
+	FIncUpdate  int32
+	RgbReserved [32]byte
+}
+
 func wndProc(hwnd uintptr, msg uint32, wParam, lParam uintptr) uintptr {
-	if msg == WM_DESTROY {
+	switch msg {
+	case WM_DESTROY:
 		postQuitMessage.Call(0)
+		return 0
+
+	case WM_PAINT:
+		var ps paintStruct
+		hdc, _, _ := beginPaint.Call(hwnd, uintptr(unsafe.Pointer(&ps)))
+		if hdc != 0 {
+			var r rect
+			getClientRect.Call(hwnd, uintptr(unsafe.Pointer(&r)))
+
+			// Define a cor do texto para Branco (0x00FFFFFF -> formato COLORREF BBGGRR)
+			setTextColor.Call(hdc, 0x00FFFFFF)
+			// Define o modo de fundo do texto como Transparente (1)
+			setBkMode.Call(hdc, 1)
+
+			// Cria uma fonte personalizada (Segoe UI, 48px de altura, Negrito/FW_BOLD)
+			fontName, _ := windows.UTF16PtrFromString("Segoe UI")
+			hFont, _, _ := createFont.Call(
+				48, // Altura da fonte
+				0,  // Largura (0 escolhe automaticamente a proporção)
+				0, 0,
+				700, // Peso da fonte (700 = FW_BOLD)
+				0, 0, 0,
+				1,       // DEFAULT_CHARSET
+				0, 0, 5, // CLEARTYPE_QUALITY
+				0,
+				uintptr(unsafe.Pointer(fontName)),
+			)
+
+			// Seleciona a fonte recém-criada no Device Context (DC)
+			oldFont, _, _ := selectObject.Call(hdc, hFont)
+
+			// Desenha o texto no centro da tela
+			text, _ := windows.UTF16PtrFromString("ESTE COMPUTADOR FOI BLOQUEADO")
+			drawText.Call(
+				hdc,
+				uintptr(unsafe.Pointer(text)),
+				^uintptr(0), // Calcula o tamanho do texto automaticamente
+				uintptr(unsafe.Pointer(&r)),
+				DT_CENTER|DT_VCENTER|DT_SINGLELINE, // Alinhamento centralizado
+			)
+
+			// Restaura a fonte padrão do sistema e deleta a fonte criada para liberar memória
+			selectObject.Call(hdc, oldFont)
+			deleteObject.Call(hFont)
+
+			endPaint.Call(hwnd, uintptr(unsafe.Pointer(&ps)))
+		}
 		return 0
 	}
 
 	ret, _, _ := defWindowProc.Call(hwnd, uintptr(msg), wParam, lParam)
 	return ret
+
 }
 
 var blockHwnd uintptr
 
 func createWindow() {
-	screenW, _, _ := getSystemMetric.Call(0)
-	screenH, _, _ := getSystemMetric.Call(1)
+	screenX, _, _ := getSystemMetric.Call(SM_XVIRTUALSCREEN)
+	screenY, _, _ := getSystemMetric.Call(SM_YVIRTUALSCREEN)
+	screenW, _, _ := getSystemMetric.Call(SM_CXVIRTUALSCREEN)
+	screenH, _, _ := getSystemMetric.Call(SM_CYVIRTUALSCREEN)
+
+	// Fallback para caso as métricas virtuais falhem (usa o monitor principal)
+	if screenW == 0 || screenH == 0 {
+		screenX = 0
+		screenY = 0
+		screenW, _, _ = getSystemMetric.Call(0)
+		screenH, _, _ = getSystemMetric.Call(1)
+	}
 
 	runtime.LockOSThread()
 
 	instace, _, _ := getModuleHandle.Call(0)
 	title, _ := windows.UTF16PtrFromString("BLOQUEADO")
 	className, _ := windows.UTF16PtrFromString("blockWindow")
-	wndProcCallback := syscall.NewCallback(wndProc)
+
+	blueBrush, _, _ := createSolidBrush.Call(0x00D77800)
 
 	wc := wndClassEx{
-		CbSize:     uint32(unsafe.Sizeof(wndClassEx{})),
-		LpfnWmProc: wndProcCallback,
-		HInstance:  windows.Handle(instace),
-		ClassName:  className,
+		CbSize:        uint32(unsafe.Sizeof(wndClassEx{})),
+		LpfnWmProc:    wndProcCallback,
+		HInstance:     windows.Handle(instace),
+		ClassName:     className,
+		HbrBackground: windows.Handle(blueBrush),
 	}
 	registerClassEx.Call(uintptr(unsafe.Pointer(&wc)))
 
 	hwnd, _, _ := createWindowEx.Call(
-		0,
+		WS_EX_TOPMOST,
 		uintptr(unsafe.Pointer(className)),
 		uintptr(unsafe.Pointer(title)),
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, (screenW + 100), (screenH + 100),
+		wsPopup,
+		uintptr(screenX), uintptr(screenY),
+		uintptr(screenW), uintptr(screenH),
 		0, 0, instace, 0,
 	)
 	blockHwnd = hwnd
-	newStyle := uint32(wsPopup | wsSysMenu | wsThickFrame | wsMaximizeBox | wsMinimizeBox)
+	newStyle := uint32(wsPopup)
 	gwlStyleVar := int32(gwlStyle)
 
-	showWindow.Call(hwnd, SW_SHOW)
-	updateWindow.Call(hwnd)
-	//fullScreen(hwnd)
 	setWindowLongPtr.Call(blockHwnd, uintptr(gwlStyleVar), uintptr(newStyle))
+
+	setWindowPos.Call(
+		blockHwnd,
+		^uintptr(0), // HWND_TOP
+		uintptr(screenX), uintptr(screenY),
+		uintptr(screenW), uintptr(screenH),
+		swpFrameChanged|swpShowWindow,
+	)
+
+	setForegroundWindow.Call(blockHwnd)
+	setActiveWindow.Call(blockHwnd)
+	setFocus.Call(blockHwnd)
 
 	var m msg
 	for {
@@ -131,6 +251,12 @@ func createWindow() {
 		translateMessage.Call(uintptr(unsafe.Pointer(&m)))
 		dispatchMessage.Call(uintptr(unsafe.Pointer(&m)))
 	}
+	deleteObject.Call(blueBrush)
+
+	unregisterClass.Call(
+		uintptr(unsafe.Pointer(className)),
+		instace,
+	)
 }
 
 func closeWindow() uintptr {
@@ -138,21 +264,29 @@ func closeWindow() uintptr {
 	return ret
 }
 
-func blockMonitorByWindow(ctx context.Context) error {
+func LockMonitorByWindow(ctx context.Context) error {
 	log.Println("bloquear monitor")
 	go createWindow()
-	BlockMouseAndKeyboard(ctx)
+	params := make(map[string]int32)
+	LockMouseAndKeyboard(ctx, params)
 	return nil
 }
 
-func unBlockMonitorByWindow(ctx context.Context) error {
+func unLockMonitorByWindow(ctx context.Context) error {
 	log.Println("desbloquear monitor")
 	if blockHwnd != 0 {
 		closeWindow()
 		blockHwnd = 0
 	}
-	UnBlockMouseAndKeyboard(ctx)
+	params := make(map[string]int32)
+	UnlockMouseAndKeyboard(ctx, params)
 	return nil
 }
-func BlockMonitor(ctx context.Context) error   { return blockMonitorByWindow(ctx) }
-func UnBlockMonitor(ctx context.Context) error { return unBlockMonitorByWindow(ctx) }
+
+func LockMonitor(ctx context.Context, params map[string]int32) error {
+	return LockMonitorByWindow(ctx)
+}
+
+func UnlockMonitor(ctx context.Context, param map[string]int32) error {
+	return unLockMonitorByWindow(ctx)
+}

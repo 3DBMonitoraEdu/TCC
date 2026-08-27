@@ -528,5 +528,9 @@ func setInputBlock(ctx context.Context, block bool) error {
 	return nil
 }
 
-func BlockMouseAndKeyboard(ctx context.Context) error   { return setInputBlock(ctx, true) }
-func UnBlockMouseAndKeyboard(ctx context.Context) error { return setInputBlock(ctx, false) }
+func LockMouseAndKeyboard(ctx context.Context, params map[string]int32) error {
+	return setInputBlock(ctx, true)
+}
+func UnlockMouseAndKeyboard(ctx context.Context, param map[string]int32) error {
+	return setInputBlock(ctx, false)
+}

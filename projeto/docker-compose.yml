@@ -1,0 +1,25 @@
+services:
+  servidor:
+    build:
+      context: ./servidor
+      dockerfile: Dockerfile
+    container_name: tcc_servidor
+    ports:
+      - "4040:4040"
+    volumes:
+      - ./servidor/data:/app/data
+      - /app/node_modules
+    restart: always
+
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: tcc_front
+    ports:
+      - "8080:8080"
+    environment:
+      - VITE_API_URL=http://localhost:4040
+    depends_on:
+      - servidor
+    restart: always

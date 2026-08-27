@@ -22,6 +22,7 @@ export interface Agent {
   disk_used_gb: number | null;
   disk_total_gb: number | null;
   collected_at: string | null;
+  last_active_process?: string | null;
 }
 
 export interface Process {
@@ -29,9 +30,46 @@ export interface Process {
   name: string;
   pid: number | null;
   mem_mb: number | null;
+  created_at?: string | null;
+  createdAt?: string | null;
 }
 
 export type AgentStatus = "online" | "offline" | "warning";
+
+export function getProcessCreatedAt(process: Process): number | null {
+  const rawValue = process.createdAt ?? process.created_at;
+  if (!rawValue) return null;
+
+  const timestamp = new Date(rawValue).getTime();
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+export function sortProcessesByCreationDate(processes: Process[]): Process[] {
+  return [...processes].sort((a, b) => {
+    const aTime = getProcessCreatedAt(a);
+    const bTime = getProcessCreatedAt(b);
+
+    if (aTime == null && bTime == null) return 0;
+    if (aTime == null) return 1;
+    if (bTime == null) return -1;
+
+    return bTime - aTime;
+  });
+}
+
+export function sortProcessesCustom(processes: Process[]): Process[] {
+  if (processes.length <= 1) return processes;
+
+  // Primeiro, ordena por data de criação para identificar o processo mais recente
+  const sortedByDate = sortProcessesByCreationDate(processes);
+  const mostRecent = sortedByDate[0];
+  const rest = sortedByDate.slice(1);
+
+  // Ordena o restante pelo peso de memória RAM (mem_mb) em ordem decrescente
+  rest.sort((a, b) => (b.mem_mb ?? 0) - (a.mem_mb ?? 0));
+
+  return [mostRecent, ...rest];
+}
 
 // Determina status do agente baseado no last_seen_at e metricas.
 export function getAgentStatus(agent: Agent): AgentStatus {

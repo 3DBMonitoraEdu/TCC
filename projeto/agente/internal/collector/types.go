@@ -17,7 +17,8 @@ type Metrics struct {
 
 // ProcessInfo representa um processo (aplicativo) em execucao.
 type ProcessInfo struct {
-	PID   int32   `json:"pid"`
-	Name  string  `json:"name"`
-	MemMB float64 `json:"memMb"`
+	PID       int32     `json:"pid"`
+	Name      string    `json:"name"`
+	MemMB     float64   `json:"memMb"`
+	CreatedAt time.Time `json:"createdAt"`
 }
