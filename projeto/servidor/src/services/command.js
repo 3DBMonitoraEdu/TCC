@@ -8,8 +8,8 @@ export function CreateCommand(agent_uuid, command){
 export function UpdateCommand(agent_uuid){
      const deleted = db.prepare("DELETE FROM command WHERE agent_uuid = ?").run(agent_uuid)
      if(deleted.changes === 0){
-          console.log(`comando não encontrado para deletar agent_uuid: ${agent_uuid}`)
-     }
+            console.log(`comando não encontrado para deletar, agent_uuid: ${agent_uuid}`)
+    }
 }
 
 export function returnJsonForAgent(agent_uuid){
