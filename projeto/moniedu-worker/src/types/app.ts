@@ -1,5 +1,13 @@
 
+import type { auth } from "../auth.ts"
 
+type BetterAuthSession = typeof auth.$Infer.Session;
+
+
+export type AppVariables = {
+	user: BetterAuthSession["user"];
+	session: BetterAuthSession["session"];
+};
 
 export type AgentRegisterJson = {
 	joinCode: string;
@@ -22,7 +30,7 @@ export type AgentProcesses = {
 	pid: number;
 	name: string;
 	memMb: number;
-	createdAt: Date;
+	createdAt: string | null;
 };
 
 export type CreateCommandBody = {
@@ -30,5 +38,7 @@ export type CreateCommandBody = {
 	command: string;
 };
 
-
+export type CreateRoomBody = {
+	name: string;
+}
 

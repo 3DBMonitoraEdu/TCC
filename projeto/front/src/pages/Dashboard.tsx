@@ -1,361 +1,279 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  type MouseEvent,
-} from "react";
-
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { getAgentProcesses, sendAgentCommand } from "@/api/agents";
+import { createRoom, deleteRoom, getRoomAgents, getRooms } from "@/api/rooms";
+import { AgentDetails } from "@/components/dashboard/AgentDetails";
+import { AgentList } from "@/components/dashboard/AgentList";
+import { CreateRoomDialog } from "@/components/dashboard/CreateRoomDialog";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { RoomList } from "@/components/dashboard/RoomList";
+import { authClient } from "@/lib/auth-client";
+import type { Agent, Process, Room } from "@/types";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
-
-import {
-  Monitor,
-  Plus,
-  ChevronRight,
-  Trash2,
-  LogOut,
-} from "lucide-react";
-
-import { useAuth } from "@/contexts/AuthContext.jsx";
-
-import {
-  getRooms,
-  createRoom,
-  deleteRoom,
-} from "@/api/rooms.ts";
-
-import type { Room } from "@/types/index.ts";
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
-
-  const { logout, teacher } = useAuth();
+  const { data } = authClient.useSession();
+  const session = data as unknown as { user?: { name?: string | null } } | null;
 
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [processes, setProcesses] = useState<Process[]>([]);
 
-  const [loading, setLoading] = useState(false);
-
+  const [loadingRooms, setLoadingRooms] = useState(true);
+  const [loadingAgents, setLoadingAgents] = useState(false);
+  const [loadingProcesses, setLoadingProcesses] = useState(false);
+  const [creatingRoom, setCreatingRoom] = useState(false);
+  const [executingCommand, setExecutingCommand] = useState<string | null>(null);
+  const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const selectedRoomId = selectedRoom?.id;
+  const selectedAgentUuid = selectedAgent?.agent_uuid;
 
-  const [isAddRoomOpen, setIsAddRoomOpen] = useState(false);
-
-  const [newRoomName, setNewRoomName] = useState("");
-
-  const [addingRoom, setAddingRoom] = useState(false);
-
-  const fetchRooms = useCallback(async () => {
-    setLoading(true);
+  const loadRooms = useCallback(async () => {
+    setLoadingRooms(true);
     setError("");
 
     try {
-      const data = await getRooms();
-
-      setRooms(data);
-    } catch (err: any) {
-      setError(err.message);
+      setRooms(await getRooms());
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Não foi possível carregar as salas."));
     } finally {
-      setLoading(false);
+      setLoadingRooms(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchRooms();
-  }, [fetchRooms]);
+    void loadRooms();
+  }, [loadRooms]);
 
-  const handleAddRoom = async () => {
-    if (!newRoomName.trim()) {
+  const loadAgents = useCallback(async () => {
+    if (selectedRoomId == null) return;
+
+    setLoadingAgents(true);
+    setError("");
+
+    try {
+      const data = await getRoomAgents(selectedRoomId);
+      setAgents(data.agents);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Não foi possível carregar os agentes."));
+    } finally {
+      setLoadingAgents(false);
+    }
+  }, [selectedRoomId]);
+
+  useEffect(() => {
+    if (selectedRoomId == null) return;
+
+    void loadAgents();
+    const intervalId = window.setInterval(() => void loadAgents(), 30_000);
+
+    return () => window.clearInterval(intervalId);
+  }, [selectedRoomId, loadAgents]);
+
+  useEffect(() => {
+    setSelectedAgent((currentAgent) => {
+      if (!currentAgent) return currentAgent;
+      return agents.find((agent) => agent.agent_uuid === currentAgent.agent_uuid) ?? currentAgent;
+    });
+  }, [agents]);
+
+  const loadProcesses = useCallback(async () => {
+    if (!selectedAgentUuid) return;
+
+    setLoadingProcesses(true);
+    setError("");
+
+    try {
+      setProcesses(await getAgentProcesses(selectedAgentUuid));
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Não foi possível carregar os processos."));
+    } finally {
+      setLoadingProcesses(false);
+    }
+  }, [selectedAgentUuid]);
+
+  useEffect(() => {
+    if (!selectedAgentUuid) {
+      setProcesses([]);
       return;
     }
 
-    setAddingRoom(true);
+    void loadProcesses();
+  }, [selectedAgentUuid, loadProcesses]);
+
+  const handleEnterRoom = (room: Room) => {
+    setSelectedRoom(room);
+    setSelectedAgent(null);
+    setAgents([]);
+    setProcesses([]);
+    setError("");
+    setMessage("");
+  };
+
+  const handleSelectAgent = (agent: Agent) => {
+    setSelectedAgent(agent);
+    setProcesses([]);
+    setError("");
+    setMessage("");
+  };
+
+  const handleBack = () => {
+    setError("");
+    setMessage("");
+
+    if (selectedAgent) {
+      setSelectedAgent(null);
+      setProcesses([]);
+      return;
+    }
+
+    setSelectedRoom(null);
+    setAgents([]);
+  };
+
+  const handleCreateRoom = async (name: string) => {
+    setCreatingRoom(true);
+    setError("");
 
     try {
-
-      await createRoom(newRoomName.trim());
-
-      const updatedRooms = await getRooms();
-
-      setRooms(updatedRooms);
-
-      setNewRoomName("");
-
-      setIsAddRoomOpen(false);
-
-    } catch (err: any) {
-
-      setError(err.message);
-
+      const room = await createRoom(name);
+      setRooms((currentRooms) => [...currentRooms, room]);
+      setIsCreateRoomOpen(false);
+      setMessage(`Sala ${room.name} criada com sucesso.`);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Não foi possível criar a sala."));
+      return false;
     } finally {
-
-      setAddingRoom(false);
-
+      setCreatingRoom(false);
     }
   };
 
-  const handleDeleteRoom = async (
-    roomId: number,
-    e?: MouseEvent
-  ) => {
+  const handleDeleteRoom = async (room: Room) => {
+    const confirmed = window.confirm(`Deseja realmente remover a sala “${room.name}”?`);
+    if (!confirmed) return;
 
-    e?.stopPropagation();
+    setError("");
 
     try {
-      await deleteRoom(roomId);
+      await deleteRoom(room.id);
+      setRooms((currentRooms) => currentRooms.filter((item) => item.id !== room.id));
 
-      setRooms((prev) =>
-        prev.filter(
-          (room) => room.id !== roomId
-        )
-      );
-    } catch (err: any) {
-      setError(err.message);
+      if (selectedRoom?.id === room.id) {
+        setSelectedAgent(null);
+        setSelectedRoom(null);
+        setAgents([]);
+        setProcesses([]);
+      }
+
+      setMessage(`Sala ${room.name} removida.`);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Não foi possível remover a sala."));
     }
   };
-  const handleLogout = async () => {
-    await logout();
 
-    navigate("/login");
+  const handleSendCommand = async (command: string) => {
+    if (!selectedAgent) return;
+
+    setExecutingCommand(command);
+    setError("");
+    setMessage("");
+
+    try {
+      await sendAgentCommand(selectedAgent.agent_uuid, command);
+      setMessage(`Comando enviado para ${selectedAgent.hostname}.`);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Não foi possível enviar o comando."));
+    } finally {
+      setExecutingCommand(null);
+    }
   };
+
+  const handleLogout = async () => {
+    await authClient.signOut({});
+    navigate("/login", { replace: true });
+  };
+
+  const title = selectedAgent
+    ? selectedAgent.hostname
+    : selectedRoom?.name ?? "Gerenciamento de Salas";
+  const subtitle = selectedAgent
+    ? "Detalhes, processos e controles do computador"
+    : selectedRoom
+      ? "Computadores conectados à sala"
+      : `Bem-vindo${session?.user.name ? `, ${session.user.name}` : ""}`;
+
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <header className="flex items-center justify-between mb-8">
+    <main className="min-h-screen bg-slate-50 p-4 sm:p-6">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <DashboardHeader
+          title={title}
+          subtitle={subtitle}
+          onBack={selectedRoom ? handleBack : undefined}
+          onRefresh={selectedAgent ? loadProcesses : selectedRoom ? loadAgents : loadRooms}
+          refreshing={selectedAgent ? loadingProcesses : selectedRoom ? loadingAgents : loadingRooms}
+          onLogout={handleLogout}
+        />
 
-          <div className="flex items-center gap-4">
-
-            <img
-              src="/iconepaginas.png"
-              alt="Monitoramento Escolar"
-              className="h-14 w-auto object-contain"
-            />
-
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">
-                Gerenciamento de Salas
-              </h1>
-
-              <p className="text-slate-600 mt-1">
-                Bem-vindo, {teacher?.name}
-              </p>
-            </div>
-
-          </div>
-
-          <div className="flex items-center gap-3">
-
-            <Button
-              onClick={() =>
-                setIsAddRoomOpen(true)
-              }
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-
-              Adicionar Sala
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-
-              Sair
-            </Button>
-
-          </div>
-
-        </header>
         {error && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+          <div role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
             {error}
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-3">
 
-          {loading && (
-            <p className="col-span-full text-center text-slate-500 py-12">
-              Carregando salas...
-            </p>
-          )}
+        {message && (
+          <div role="status" className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+            {message}
+          </div>
+        )}
 
-          {!loading &&
-            rooms.length === 0 && (
-              <div className="col-span-full text-center py-12 text-slate-500 bg-white rounded-lg border border-slate-200">
-                Nenhuma sala criada ainda.
-              </div>
-            )}
+        {!selectedRoom && (
+          <RoomList
+            rooms={rooms}
+            loading={loadingRooms}
+            onAddRoom={() => setIsCreateRoomOpen(true)}
+            onEnterRoom={handleEnterRoom}
+            onDeleteRoom={handleDeleteRoom}
+          />
+        )}
 
-          {rooms.map((room) => (
+        {selectedRoom && !selectedAgent && (
+          <AgentList
+            room={selectedRoom}
+            agents={agents}
+            loading={loadingAgents}
+            onSelectAgent={handleSelectAgent}
+            onDeleteRoom={() => void handleDeleteRoom(selectedRoom)}
+          />
+        )}
 
-            <Card
-              key={room.id}
-              className=" border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer group overflow-hidden py-0 gap-0"
-              onClick={() =>
-                navigate(
-                  `/inDashboard/${room.id}`
-                )
-              }
-            >
-              <div
-                className=" flex items-center justify-between bg-slate-50 border-b border-slate-200 px-5 py-2.5 cursor-default"
-                onClick={(e) =>
-                  e.stopPropagation()
-                }
-              >
-
-                <span className="text-xs font-medium text-slate-500">
-                  Código da sala
-                </span>
-
-                <span className=" text-xs font-mono font-semibold text-blue-600 select-text cursor-text ">
-                  {room.join_code}
-                </span>
-
-              </div>
-              <CardHeader
-                className=" flex flex-row items-center justify-between space-y-0 px-5 pt-4 pb-3"
-              >
-
-                <CardTitle className="text-lg font-semibold text-slate-900">
-                  {room.name}
-                </CardTitle>
-
-                <div className="flex items-center gap-2">
-
-                  <Monitor className="h-5 w-5 text-blue-600" />
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="  h-8 w-8 opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 hover:bg-red-50 transition-opacity "
-                    onClick={(e) =>
-                      handleDeleteRoom(
-                        room.id,
-                        e
-                      )
-                    }
-                    title="Excluir sala"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-
-                </div>
-
-              </CardHeader>
-              <CardContent className="px-5 pb-5">
-
-                <div className=" flex items-center text-blue-600 text-sm font-medium">
-                  Ver computadores
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </div>
-
-              </CardContent>
-
-            </Card>
-
-          ))}
-
-        </div>
-
+        {selectedAgent && (
+          <AgentDetails
+            agent={selectedAgent}
+            processes={processes}
+            loadingProcesses={loadingProcesses}
+            executingCommand={executingCommand}
+            onRefreshProcesses={() => void loadProcesses()}
+            onSendCommand={(command) => void handleSendCommand(command)}
+          />
+        )}
       </div>
 
-      <Dialog
-        open={isAddRoomOpen}
-        onOpenChange={
-          setIsAddRoomOpen
-        }
-      >
-
-        <DialogContent>
-
-          <DialogHeader>
-
-            <DialogTitle>
-              Adicionar Nova Sala
-            </DialogTitle>
-
-            <DialogDescription>
-              Insira o nome da nova sala.
-              O código de pareamento será
-              gerado automaticamente.
-            </DialogDescription>
-
-          </DialogHeader>
-
-          <div className="py-4">
-
-            <Input
-              placeholder="Ex: Laboratório de Informática 02"
-              value={newRoomName}
-              onChange={(e) =>
-                setNewRoomName(
-                  e.target.value
-                )
-              }
-              onKeyDown={(e) => {
-                if (
-                  e.key === "Enter"
-                ) {
-                  handleAddRoom();
-                }
-              }}
-              autoFocus
-            />
-
-          </div>
-
-          <DialogFooter>
-
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsAddRoomOpen(
-                  false
-                );
-
-                setNewRoomName("");
-              }}
-            >
-              Cancelar
-            </Button>
-
-            <Button
-              onClick={handleAddRoom}
-              disabled={
-                !newRoomName.trim() ||
-                addingRoom
-              }
-            >
-              {addingRoom
-                ? "Criando..."
-                : "Salvar"}
-            </Button>
-
-          </DialogFooter>
-
-        </DialogContent>
-
-      </Dialog>
-
-    </div>
+      <CreateRoomDialog
+        open={isCreateRoomOpen}
+        submitting={creatingRoom}
+        onOpenChange={setIsCreateRoomOpen}
+        onCreate={handleCreateRoom}
+      />
+    </main>
   );
 }

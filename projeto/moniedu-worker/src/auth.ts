@@ -1,15 +1,13 @@
 import { betterAuth } from "better-auth";
 import { env } from "cloudflare:workers";
+import { TRUSTED_ORIGINS } from "./config/security";
 
 export const auth = betterAuth({
 
 	database:	env.moniedu,
 	secret: env.BETTER_AUTH_SECRET,
 	baseURL: env.BETTER_AUTH_URL,
-	trustedOrigins: [
-		"http://localhost:3000",
-		"https://monitoraedu.vercel.app"
-	],
+	trustedOrigins: TRUSTED_ORIGINS,
 	emailAndPassword: {
 		enabled: true,
 		//disableSignUp: true,
@@ -29,7 +27,22 @@ export const auth = betterAuth({
 			secure: true,
 			httpOnly: true,
 		}
+	},
+
+	user: {
+		additionalFields: {
+			schoolId: {
+				type: "string",
+				required: false,
+				input: false
+			},
+			role : {
+				type: ["user", "admin"],
+				required: false,
+				defaultValue: "user",
+				input: false
+			}
+		}
 	}
 });
-
 

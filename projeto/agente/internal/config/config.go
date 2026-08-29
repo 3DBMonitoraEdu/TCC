@@ -19,7 +19,7 @@ func Default() Config {
 	return Config{
 		AgentUUID:    "",
 		JoinCode:     "",
-		ServerURL:    "http://192.168.15.13:4040",
+		ServerURL:    "https://moniedu-worker.auth-store.workers.dev",
 		IntervalSecs: 30,
 		DiskPath:     "/",
 		BlockedHosts: []string{},

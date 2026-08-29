@@ -8,10 +8,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
-import InDashboard from "./pages/InDashboard";
 import NotFound from "./pages/NotFound";
 
-import { AuthProvider } from "@/contexts/AuthContext.jsx";
 import { ProtectedRoute } from "@/components/ProtectedRoute.jsx";
 
 const queryClient = new QueryClient();
@@ -23,7 +21,6 @@ const App = () => (
       <Sonner />
 
       <BrowserRouter>
-        <AuthProvider>
           <Routes>
             <Route path="/" element={<Home />} />
 
@@ -47,22 +44,11 @@ const App = () => (
               }
             />
 
-            
-            <Route
-              path="/inDashboard/:roomId"
-              element={
-                <ProtectedRoute>
-                  <InDashboard />
-                </ProtectedRoute>
-              }
-            />
-
             <Route
               path="*"
               element={<NotFound />}
             />
           </Routes>
-        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

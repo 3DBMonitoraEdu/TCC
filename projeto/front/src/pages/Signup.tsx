@@ -19,17 +19,18 @@ import { UserPlus } from "lucide-react";
 export default function Signup() {
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [school, setSchool] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const name = String(formData.get("name") ?? "");
+    const email = String(formData.get("email") ?? "");
+    const password = String(formData.get("password") ?? "");
 
     const result = await authClient.signUp.email({ name, email, password });
 
@@ -115,10 +116,9 @@ export default function Signup() {
                   <Label htmlFor="name">Nome do Professor</Label>
                   <Input
                     id="name"
+                    name="name"
                     type="text"
                     placeholder="Seu nome completo"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
                     required
                   />
                 </div>
@@ -127,10 +127,9 @@ export default function Signup() {
                   <Label htmlFor="email">E-mail</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="professor@escola.edu.br"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
@@ -139,10 +138,9 @@ export default function Signup() {
                   <Label htmlFor="password">Senha</Label>
                   <Input
                     id="password"
+                    name="password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </div>
@@ -151,10 +149,9 @@ export default function Signup() {
                   <Label htmlFor="school">Nome da Escola Pública</Label>
                   <Input
                     id="school"
+                    name="school"
                     type="text"
                     placeholder="Ex: E.E. Professor João Silva"
-                    value={school}
-                    onChange={(e) => setSchool(e.target.value)}
                     required
                   />
                 </div>

@@ -3,7 +3,7 @@ import { env } from "cloudflare:workers";
 async function CreateCommand(agentUuid: string, command: string) {
 	await env.moniedu.prepare(`
 		INSERT OR REPLACE INTO command (agent_uuid, command, status) VALUES (?, ?, 1)
-	`).bind(agentUuid, command);
+	`).bind(agentUuid, command).run();
 	console.log(`comando criado/atualizado agent_uuid: ${agentUuid} command: ${command}`);
 }
 

@@ -2,8 +2,8 @@ export interface Room {
   id: number;
   name: string;
   join_code: string;
-  school_id: number;
-  teacher_id: number;
+  school_id: number | string;
+  teacher_id: number | string;
   created_at: string;
 }
 

@@ -1,5 +1,6 @@
 import { ArrowRight, AlertTriangle, Github } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { authClient } from "@/lib/auth-client";
 
 const solutions = [
   {
@@ -35,23 +36,30 @@ const steps = [
 const systems = [
   {
     name: "LINUX",
-    image: "/linux2.png",
+    image: "/linux2.webp",
+    width: 182,
+    height: 220,
     link: "https://share.google/ikicVcKahlepIleS1",
   },
   {
     name: "WINDOWS",
-    image: "/windows2.png",
+    image: "/windows2.webp",
+    width: 280,
+    height: 280,
     link: "https://share.google/SerLuWUUmQBzMdvUc",
   },
   {
     name: "CHROME OS",
-    image: "/chromeos2.png",
+    image: "/chromeos2.webp",
+    width: 280,
+    height: 280,
     link: "https://share.google/dWxMInO0tviJQIpAO",
   },
 ];
 
 export default function Home() {
-  const navigate = useNavigate();
+
+  const { data, isPending } = authClient.useSession();
 
   const scrollToFooter = () => {
     document.getElementById("monitec-footer")?.scrollIntoView({
@@ -76,30 +84,40 @@ export default function Home() {
       "
     >
       <div className="mx-auto max-w-[1180px] px-5 py-4 sm:px-8 lg:px-10">
-        <div className="flex justify-end gap-2.5">
 
-          <button
-            onClick={() => navigate("/login")}
+        
+        <div className="flex justify-end gap-2.5">
+          {
+            (!data && !isPending) &&
+                <>
+          <Link
+            to="/login"
             className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
           >
             Entrar
-          </button>
+          </Link>
 
-          <button
-            onClick={() => navigate("/signup")}
+          <Link
+            to="/signup"
             className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
           >
             Cadastro
-          </button>
-
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
-          >
-            Minhas salas
-          </button>
-
+          </Link>
+          </>
+          }
+          
+          {
+              (data && !isPending) &&
+            <Link
+              to="/dashboard"
+              className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
+            >
+              Minhas salas
+            </Link>
+          }
         </div>
+
+        
       </div>
     </header>
     <section className="relative overflow-hidden bg-[#061a35] text-white">
@@ -255,6 +273,10 @@ export default function Home() {
            <img
              src={system.image}
              alt={system.name}
+             width={system.width}
+             height={system.height}
+             loading="lazy"
+             decoding="async"
              className="max-h-[110px] w-auto max-w-[140px] object-contain"
            />
          </a>
@@ -330,7 +352,7 @@ export default function Home() {
 
           <div className="mt-9 flex justify-center">
             <a
-              href="https://github.com/NothNada"
+              href="https://github.com/3DBMonitoraEdu/tcc"
               target="_blank"
               rel="noopener noreferrer"
               className="transition-transform duration-200 hover:scale-110"
