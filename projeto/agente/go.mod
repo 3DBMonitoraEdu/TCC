@@ -3,16 +3,17 @@ module agente
 go 1.26.4
 
 require (
+	github.com/Microsoft/go-winio v0.6.2
 	github.com/google/uuid v1.6.0
 	github.com/kardianos/service v1.3.0
+	github.com/miekg/dns v1.1.73
 	github.com/mouuff/go-rocket-update v1.5.6
 	github.com/ncruces/zenity v0.10.14
 	github.com/shirou/gopsutil/v3 v3.24.5
-	golang.org/x/sys v0.46.0
+	golang.org/x/sys v0.47.0
 )
 
 require (
-	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/akavel/rsrc v0.10.2 // indirect
 	github.com/dchest/jsmin v0.0.0-20220218165748-59f39799265f // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -25,4 +26,5 @@ require (
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/image v0.20.0 // indirect
+	golang.org/x/net v0.57.0 // indirect
 )

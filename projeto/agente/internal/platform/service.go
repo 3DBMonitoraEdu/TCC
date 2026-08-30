@@ -2,6 +2,7 @@ package platform
 
 import (
 	"agente/internal/agent"
+	"agente/internal/dns"
 	"log"
 
 	"github.com/kardianos/service"
@@ -14,6 +15,9 @@ type program struct {
 
 func (p *program) Start(s service.Service) error {
 	go func() {
+		dns.CreateLocalDns()
+	}()
+	go func() {
 		a, err := agent.New(p.configPath)
 		if err != nil {
 			log.Fatalf("erro ao inicializar agente: %v", err)
@@ -21,6 +25,7 @@ func (p *program) Start(s service.Service) error {
 		p.agent = a
 		p.agent.Run()
 	}()
+
 	return nil
 }
 

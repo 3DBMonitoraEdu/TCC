@@ -4,12 +4,12 @@ import (
 	"log"
 	"os"
 
-
 	"agente/internal/platform"
 	"agente/internal/updater"
 
-	"github.com/kardianos/service"
 	"runtime"
+
+	"github.com/kardianos/service"
 )
 
 var AppVersion = "v0.0.0"
@@ -20,10 +20,8 @@ func main() {
 	case "windows":
 		configPath = "C:\\ProgramData\\MoniTec\\config.json"
 
-
 	case "linux":
-		configPath = "/tmp/MoniTec"
-
+		configPath = "/tmp/MoniTec/config.json"
 
 	}
 	log.Printf("Iniciando MyApp -- %s", AppVersion)

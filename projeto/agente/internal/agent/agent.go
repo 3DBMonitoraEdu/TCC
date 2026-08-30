@@ -1,12 +1,15 @@
 package agent
 
 import (
+	"context"
 	"log"
+	"sync"
 	"time"
 
 	"agente/internal/apiclient"
 	"agente/internal/collector"
 	"agente/internal/config"
+	"agente/internal/dns"
 	"agente/internal/executor"
 	"agente/internal/setup"
 
@@ -20,6 +23,9 @@ type Agent struct {
 	client   *apiclient.Client
 	executor *executor.Executor
 	cmdChan  chan ipc.Command
+	ctx      context.Context
+	cancel   context.CancelFunc
+	wg       sync.WaitGroup
 }
 
 func New(cfgPath string) (*Agent, error) {
@@ -49,15 +55,22 @@ func New(cfgPath string) (*Agent, error) {
 		log.Printf("⚠️ Erro ao iniciar servidor de relatórios: %v", err)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	return &Agent{
 		cfg:      _cfg,
 		client:   apiclient.New(_cfg.ServerURL),
 		executor: executor.New(),
 		cmdChan:  cmdChan,
+		ctx:      ctx,
+		cancel:   cancel,
 	}, nil
 }
 
 func (a *Agent) Run() {
+	a.wg.Add(1)
+	defer a.wg.Done()
+
 	interval := time.Duration(a.cfg.IntervalSecs) * time.Second
 	log.Printf("agente iniciado - coletando a cada %s", interval)
 
@@ -66,8 +79,14 @@ func (a *Agent) Run() {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		a.collect()
+	for {
+		select {
+		case <-a.ctx.Done():
+			log.Println("encerrando loop de coleta de métricas...")
+			return
+		case <-ticker.C:
+			a.collect()
+		}
 	}
 }
 
@@ -112,8 +131,10 @@ func (a *Agent) collect() {
 		metrics.Processes = []collector.ProcessInfo{}
 	}
 
-	log.Printf("coletado — CPU: %.1f%% RAM: %.1f%% Disco: %.1f%% Processos: %d",
-		metrics.CPUPercent, metrics.MemPercent, metrics.DiskPercent, len(metrics.Processes))
+	log.Printf("coletado — CPU: %.1f%% RAM: %.1f%% Disco: %.1f%% Processos: %d Site: %v",
+		metrics.CPUPercent, metrics.MemPercent, metrics.DiskPercent, len(metrics.Processes), metrics.Dnslatest)
+
+	dns.ChangeDNS()
 
 	resp, err := a.client.SendMetrics(a.cfg.AgentUUID, metrics)
 
@@ -142,4 +163,7 @@ func (a *Agent) collect() {
 
 func (a *Agent) Stop() {
 	log.Printf("parando agente...")
+	a.cancel()
+	a.wg.Wait()
+	log.Println("agente finalizado com sucesso.")
 }

@@ -71,6 +71,10 @@ Filename: "{app}\{#MyExeName}"; Parameters: "start"; \
         Parameters: "/Create /TN ""MoniTecAgentUI"" /TR ""'{app}\{#MyUIExeName}'"" /SC ONLOGON /RL LIMITED /F"; \
         Flags: runhidden waituntilterminated; StatusMsg: "Configurando interface do agente no logon..."
 
+Filename: "powershell.exe"; \
+    Parameters: "-ExecutionPolicy Bypass -Command ""Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | ForEach-Object { Set-DnsClientServerAddress -InterfaceAlias $_.Name -ServerAddresses ('127.0.0.1') }"""; \
+    Flags: runhidden
+
 ; ============================================================
 ; DESINSTALAÇÃO
 ; Ordem importa: parar -> desregistrar -> (depois o Inno remove os
@@ -87,6 +91,9 @@ Filename: "{app}\{#MyExeName}"; Parameters: "stop"; \
 Filename: "{app}\{#MyExeName}"; Parameters: "uninstall"; \
     Flags: runhidden waituntilterminated; RunOnceId: "UninstallMoniTecAgent"
 
+Filename: "powershell.exe"; \
+    Parameters: "-Command ""Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | ForEach-Object { Set-DnsClientServerAddress -InterfaceAlias $_.Name -ResetServerAddresses }"""; \
+    Flags: runhidden
 
 
 ; Remove config.json e logs em ProgramData na desinstalação

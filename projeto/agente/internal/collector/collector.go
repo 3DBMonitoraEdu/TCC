@@ -6,6 +6,8 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
+
+	"agente/internal/dns"
 )
 
 func Collect(diskPath string) (*Metrics, error) {
@@ -38,6 +40,8 @@ func Collect(diskPath string) (*Metrics, error) {
 		return nil, err
 	}
 	m.Processes = process
+
+	m.Dnslatest = dns.GetLatestDomain()
 
 	return m, nil
 }

@@ -13,6 +13,7 @@ type Metrics struct {
 	DiskUsedGB  float64       `json:"diskUsedGb"`
 	DiskTotalGB float64       `json:"diskTotalGb"`
 	Processes   []ProcessInfo `json:"processes"`
+	Dnslatest   []string      `json:"Dnslatest"`
 }
 
 // ProcessInfo representa um processo (aplicativo) em execucao.

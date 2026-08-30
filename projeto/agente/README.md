@@ -50,7 +50,7 @@ O agente se comunica exclusivamente com o **servidor central** via requisições
 6. **Execução de comandos**: ao receber instruções, o agente-session.exe executa ações na sessão do usuário — kill PID, lock monitor, lock mouse/keyboard e exibe diálogos via zenity UI;
 7. **Atualização de configuração**:  o agente-session.exe pode escrever no config.json em C:\ProgramData, permitindo que o agente.exe leia as atualizações em execuções futuras.
 
-![Diagrama-de-agente](windows-service.png)
+![Diagrama-de-agente](imgs/windows-service.png)
 
 ---
 
@@ -116,9 +116,9 @@ o "interval_secs" serve para alterar o tempo de comunicação do agente com o se
 
 ## screenshots
 
-![lockMonitor](lockMonitor.png)
+![lockMonitor](imgs/lockMonitor.png)
 
-![config-init](config-init.png)
+![config-init](imgs/config-init.png)
 
 ## 👨‍💻 Autores
 
