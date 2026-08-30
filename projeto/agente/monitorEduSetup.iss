@@ -15,7 +15,7 @@
 #define MyAppName "MoniTec Agent"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "MoniTec"
-#define MyServiceName "MoniTecAgent"
+#define MyServiceName "MonitorEdu"
 #define MyExeName "agente.exe"
 #define MyUIExeName "agente-session.exe"
 
@@ -49,6 +49,13 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
     Source: "build\config.json"; DestDir: "{commonappdata}\MoniTec"; Flags: onlyifdoesntexist; Permissions: users-modify
 
 ; ============================================================
+; INICIALIZAÇÃO NO LOGON (REGISTRY)
+; Registra o agente de sessão para inicializar em todos os logons
+; ============================================================
+[Registry]
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "MoniTecAgentUI"; ValueData: """{app}\{#MyUIExeName}"""; Flags: uninsdeletevalue
+
+; ============================================================
 ; INSTALAÇÃO
 ; Ordem importa: instalar -> configurar recovery -> configurar
 ; start automático -> iniciar
@@ -61,15 +68,11 @@ Filename: "{sys}\sc.exe"; \
     Parameters: "failure {#MyServiceName} reset= 86400 actions= restart/5000/restart/5000/restart/5000"; \
     Flags: runhidden waituntilterminated; StatusMsg: "Configurando recuperação automática..."
 
-Filename: "{sys}\sc.exe"; Parameters: "config {#MyServiceName} start= delayed-auto"; \
+Filename: "{sys}\sc.exe"; Parameters: "config {#MyServiceName} start= auto"; \
     Flags: runhidden waituntilterminated; StatusMsg: "Configurando início automático..."
 
 Filename: "{app}\{#MyExeName}"; Parameters: "start"; \
     Flags: runhidden waituntilterminated; StatusMsg: "Iniciando serviço MoniTec Agent..."
-
-Filename: "{sys}\schtasks.exe"; \
-    Parameters: "/Create /TN ""MoniTecAgentUI"" /TR ""{app}\{#MyUIExeName}"" /SC ONLOGON /RL LIMITED /F"; \
-    Flags: runhidden waituntilterminated; StatusMsg: "Configurando interface do agente no logon..."
 
 Filename: "powershell.exe"; \
     Parameters: "-ExecutionPolicy Bypass -Command ""Get-NetAdapter | Where-Object {{$_.Status -eq 'Up'} | ForEach-Object {{ Set-DnsClientServerAddress -InterfaceAlias $_.Name -ServerAddresses ('127.0.0.1') }"""; \
@@ -81,7 +84,7 @@ Filename: "powershell.exe"; \
 ; arquivos automaticamente, e o [UninstallDelete] cuida do ProgramData)
 ; ============================================================
 [UninstallRun]
-; Remove a tarefa agendada ao desinstalar
+; Remove eventual tarefa agendada antiga se existir
 Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""MoniTecAgentUI"" /F"; \
     Flags: runhidden waituntilterminated; RunOnceId: "DeleteMoniTecAgentUI"
 
