@@ -67,13 +67,13 @@ Filename: "{sys}\sc.exe"; Parameters: "config {#MyServiceName} start= delayed-au
 Filename: "{app}\{#MyExeName}"; Parameters: "start"; \
     Flags: runhidden waituntilterminated; StatusMsg: "Iniciando serviço MoniTec Agent..."
 
- Filename: "{sys}\schtasks.exe"; \
-        Parameters: "/Create /TN ""MoniTecAgentUI"" /TR ""'{app}\{#MyUIExeName}'"" /SC ONLOGON /RL LIMITED /F"; \
-        Flags: runhidden waituntilterminated; StatusMsg: "Configurando interface do agente no logon..."
+Filename: "{sys}\schtasks.exe"; \
+    Parameters: "/Create /TN ""MoniTecAgentUI"" /TR ""{app}\{#MyUIExeName}"" /SC ONLOGON /RL LIMITED /F"; \
+    Flags: runhidden waituntilterminated; StatusMsg: "Configurando interface do agente no logon..."
 
 Filename: "powershell.exe"; \
-    Parameters: "-ExecutionPolicy Bypass -Command ""Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | ForEach-Object { Set-DnsClientServerAddress -InterfaceAlias $_.Name -ServerAddresses ('127.0.0.1') }"""; \
-    Flags: runhidden
+    Parameters: "-ExecutionPolicy Bypass -Command ""Get-NetAdapter | Where-Object {{$_.Status -eq 'Up'} | ForEach-Object {{ Set-DnsClientServerAddress -InterfaceAlias $_.Name -ServerAddresses ('127.0.0.1') }"""; \
+    Flags: runhidden waituntilterminated; StatusMsg: "Configurando DNS local..."
 
 ; ============================================================
 ; DESINSTALAÇÃO
