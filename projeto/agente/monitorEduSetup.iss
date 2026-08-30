@@ -20,7 +20,7 @@
 #define MyUIExeName "agente-session.exe"
 
 [Setup]
-AppId={{B6F1E2A0-9C3D-4F2E-8B1A-3E7C1D2F4A9B}}
+AppId={{B6F1E2A0-9C3D-4F2E-8B1A-3E7C1D2F4A9B}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
@@ -37,7 +37,7 @@ UninstallDisplayIcon={app}\{#MyExeName}
 DisableWelcomePage=no
 ; Não deixa o usuário mudar a pasta de instalação, evita erro de config
 ; (comente essa linha se quiser permitir customização de path)
-DisableDirPage=no
+DisableDirPage=yes
 AlwaysRestart=yes
 
 [Languages]
@@ -84,7 +84,7 @@ Filename: "powershell.exe"; \
 ; Remove a tarefa agendada ao desinstalar
 Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""MoniTecAgentUI"" /F"; \
     Flags: runhidden waituntilterminated; RunOnceId: "DeleteMoniTecAgentUI"
-    
+
 Filename: "{app}\{#MyExeName}"; Parameters: "stop"; \
     Flags: runhidden waituntilterminated; RunOnceId: "StopMoniTecAgent"
 
@@ -92,9 +92,8 @@ Filename: "{app}\{#MyExeName}"; Parameters: "uninstall"; \
     Flags: runhidden waituntilterminated; RunOnceId: "UninstallMoniTecAgent"
 
 Filename: "powershell.exe"; \
-    Parameters: "-Command ""Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | ForEach-Object { Set-DnsClientServerAddress -InterfaceAlias $_.Name -ResetServerAddresses }"""; \
-    Flags: runhidden
-
+    Parameters: "-ExecutionPolicy Bypass -Command ""Get-NetAdapter | Where-Object {{$_.Status -eq 'Up'} | ForEach-Object {{ Set-DnsClientServerAddress -InterfaceAlias $_.Name -ResetServerAddresses }"""; \
+    Flags: runhidden waituntilterminated; RunOnceId: "ResetDnsMoniTecAgent"
 
 ; Remove config.json e logs em ProgramData na desinstalação
 [UninstallDelete]
