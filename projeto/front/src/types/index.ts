@@ -34,6 +34,11 @@ export interface Process {
   createdAt?: string | null;
 }
 
+export interface Schools {
+  id: number;
+  name: string;
+}
+
 export type AgentStatus = "online" | "offline" | "warning";
 
 export function getProcessCreatedAt(process: Process): number | null {

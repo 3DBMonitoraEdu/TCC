@@ -13,23 +13,22 @@
 			"BETTER_AUTH_URL"
 		]
 	},
-    
-  "observability": {
-    "enabled": false,
-    "head_sampling_rate": 1,
-    "redact_query_string": false,
-    "logs": {
-      "enabled": true,
-      "head_sampling_rate": 1,
-      "persist": true,
-      "invocation_logs": true
-    },
-    "traces": {
-      "enabled": true,
-      "persist": true,
-      "head_sampling_rate": 1
-    }
-  },
+	"observability": {
+		"enabled": false,
+		"head_sampling_rate": 1,
+		"redact_query_string": false,
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+			"persist": true,
+			"invocation_logs": true
+		},
+		"traces": {
+			"enabled": true,
+			"persist": true,
+			"head_sampling_rate": 1
+		}
+	},
 	"upload_source_maps": true,
 	"d1_databases": [
 		{
@@ -38,7 +37,9 @@
 			"database_id": "ce3ee3dd-4df6-48d8-a117-fb5b5351c356"
 		}
 	],
-	"compatibility_flags": ["nodejs_compat"]
+	"compatibility_flags": [
+		"nodejs_compat"
+	]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

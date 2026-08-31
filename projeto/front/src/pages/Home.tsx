@@ -97,12 +97,6 @@ export default function Home() {
             Entrar
           </Link>
 
-          <Link
-            to="/signup"
-            className="rounded-full bg-[#123b70] px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-[#7db4ff] transition hover:bg-[#17477f]"
-          >
-            Cadastro
-          </Link>
           </>
           }
           
