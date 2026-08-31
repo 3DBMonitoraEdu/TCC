@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { env } from "cloudflare:workers";
 import { TRUSTED_ORIGINS } from "./config/security";
+import { admin } from "better-auth/plugins";
 
 export const auth = betterAuth({
 
@@ -35,14 +36,11 @@ export const auth = betterAuth({
 				type: "string",
 				required: false,
 				input: false
-			},
-			role : {
-				type: ["user", "admin"],
-				required: false,
-				defaultValue: "user",
-				input: false
 			}
 		}
-	}
+	},
+	plugins: [
+		admin()
+	]
 });
 

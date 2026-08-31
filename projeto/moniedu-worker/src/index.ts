@@ -13,6 +13,7 @@ import { TRUSTED_ORIGINS } from "./config/security";
 
 import type { AppVariables } from "./types/app";
 
+
 const app = new Hono<{
 	Variables: AppVariables
 }>();
@@ -33,6 +34,25 @@ app.use("/rooms/*", csrfMiddleware);
 app.use("/rooms/*", authMiddleware);
 
 app.get("/health", (c) => c.json({ 'status': 'Funcionando!' }));
+
+/*
+app.get("/internal/:token", async (c) => {
+	const token = c.req.param("token");
+
+	if (token != env.TOKEN_ADMIN) return c.json({ message: 'oi td bem?' }, 401);
+
+	const user = await auth.api.createUser({
+		body: {
+			email: "admin@admin.com",
+			password: env.TOKEN_ADMIN,
+			name: "Administrator",
+			role: "admin"
+		}
+	});
+
+	return c.json(user);
+});
+*/
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler((c.req.raw)));
 
