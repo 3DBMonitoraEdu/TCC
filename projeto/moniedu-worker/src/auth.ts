@@ -11,7 +11,7 @@ export const auth = betterAuth({
 	trustedOrigins: TRUSTED_ORIGINS,
 	emailAndPassword: {
 		enabled: true,
-		//disableSignUp: true,
+		disableSignUp: true,
 	},
 	rateLimit: {
 		enabled: true,
