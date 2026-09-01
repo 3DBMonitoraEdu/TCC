@@ -6,12 +6,14 @@ import { auth } from "./auth";
 import agent from "./routes/agents";
 import cmd from "./routes/command";
 import rooms from "./routes/rooms";
+import schools from "./routes/schools";
 
 import { authMiddleware } from "./middlewares/auth";
 import { csrfMiddleware } from "./middlewares/csrf";
 import { TRUSTED_ORIGINS } from "./config/security";
 
 import type { AppVariables } from "./types/app";
+import { adminMiddleware } from "./middlewares/admin";
 
 
 const app = new Hono<{
@@ -30,8 +32,11 @@ app.use(
 
 app.use("/command/*", csrfMiddleware);
 app.use("/command/*", authMiddleware);
+
 app.use("/rooms/*", csrfMiddleware);
 app.use("/rooms/*", authMiddleware);
+
+app.use("/schools/*", csrfMiddleware, authMiddleware, adminMiddleware);
 
 app.get("/health", (c) => c.json({ 'status': 'Funcionando!' }));
 
@@ -71,7 +76,7 @@ app.get("/me", authMiddleware, async (c) => {
 
 
 
-
+app.route("/schools", schools);
 app.route("/command", cmd);
 app.route("/rooms", rooms);
 

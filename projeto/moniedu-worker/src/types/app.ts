@@ -42,3 +42,7 @@ export type CreateRoomBody = {
 	name: string;
 }
 
+export type CreateSchoolBody = {
+	name: string;
+};
+

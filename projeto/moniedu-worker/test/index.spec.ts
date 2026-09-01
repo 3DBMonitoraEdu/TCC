@@ -2,6 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
 import { getAgentMetrics } from "../src/services/agents";
 import { getRoomAgents } from "../src/services/rooms";
+import { createSchool } from "../src/services/schools";
 
 describe("authentication", () => {
 	it("creates a user through the email signup route", async () => {
@@ -171,5 +172,24 @@ describe("agent metrics", () => {
 		const room = await getRoomAgents("1", "teacher-1");
 		expect(room.error).toBe(false);
 		expect(room.agents?.[0]?.last_active_process).toBe("newest");
+	});
+});
+
+describe("schools", () => {
+	it("creates a school and rejects a duplicate name", async () => {
+		const created = await createSchool("Unique School");
+		const duplicate = await createSchool("Unique School");
+
+		expect(created).toMatchObject({
+			error: false,
+			school: {
+				name: "Unique School",
+			},
+		});
+		expect(created.school?.id).toBeTypeOf("number");
+		expect(duplicate).toEqual({
+			error: true,
+			message: "Já existe essa escola",
+		});
 	});
 });

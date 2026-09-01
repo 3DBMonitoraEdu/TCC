@@ -1,12 +1,11 @@
 import { authClient } from "@/lib/auth-client";
-import { UserWithRole } from "better-auth/plugins";
+import type { UserWithRole } from "better-auth/plugins";
 
 type GetUsersReturn = {
-  error?: boolean;
-  message?: string;
-  users?: UserWithRole[];
-  pages?: number;
-}
+  users: UserWithRole[];
+  pages: number;
+  total: number;
+};
 
 async function getUsers(pageSize: number, page: number): Promise<GetUsersReturn> {
   const { data, error } = await authClient.admin.listUsers({
@@ -16,20 +15,18 @@ async function getUsers(pageSize: number, page: number): Promise<GetUsersReturn>
     }
   });
 
-  if (error) return { error: true, message: error.message };
+  if (error) {
+    throw new Error(error.message ?? "Não foi possível carregar os usuários.");
+  }
+
+  if (!data) {
+    throw new Error("A lista de usuários não foi retornada pelo servidor.");
+  }
 
   const total = data.total;
   const totalPages = Math.ceil(total / pageSize);
-  
-  return { users: data.users, pages: totalPages };
+
+  return { users: data.users, pages: totalPages, total };
 }
 
-async function getSchools() {
-  
-}
-
-
-export {
-  getUsers,
-  getSchools
-}
+export { getUsers };

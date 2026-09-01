@@ -61,7 +61,7 @@ export function RoomList({
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-2.5">
               <span className="text-xs font-medium text-slate-500">Código da sala</span>
               <span className="select-text font-mono text-xs font-semibold text-blue-600">
-                {room.join_code}
+                {room.join_code.toUpperCase()}
               </span>
             </div>
 
