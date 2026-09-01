@@ -2,7 +2,7 @@
   "agent_uuid": "",
   "join_code": "",
   "server_url":  "https://moniedu-worker.auth-store.workers.dev",
-  "interval_secs": 30,
+  "interval_secs": 5,
   "disk_path": "C:\\",
   "blocked_hosts": []
 }

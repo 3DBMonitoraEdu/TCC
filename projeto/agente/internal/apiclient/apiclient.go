@@ -46,7 +46,7 @@ func (c *Client) Register(req RegisterRequest) (*RegisterResponse, error) {
 		return nil, fmt.Errorf("erro ao serializar request: %w", err)
 	}
 
-	url := c.baseURL + "/agents/register"
+	url := c.baseURL + "/agent/register"
 
 	resp, err := c.httpClient.Post(url, "application/json", bytes.NewReader(body))
 	if err != nil {
@@ -74,7 +74,7 @@ func (c *Client) SendMetrics(AgentUUID string, metrics *collector.Metrics) (stri
 		return "", fmt.Errorf("erro ao serializar metricas: %w", err)
 	}
 
-	url := fmt.Sprintf("%s/agents/%s/metrics", c.baseURL, AgentUUID)
+	url := fmt.Sprintf("%s/agent/%s/metrics", c.baseURL, AgentUUID)
 
 	resp, err := c.httpClient.Post(url, "application/json", bytes.NewReader(body))
 	if err != nil {
