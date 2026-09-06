@@ -3,7 +3,9 @@ package platform
 import (
 	"agente/internal/agent"
 	"agente/internal/dns"
-	"log"
+
+	//"log"
+	"agente/internal/logger"
 
 	"github.com/kardianos/service"
 )
@@ -20,7 +22,8 @@ func (p *program) Start(s service.Service) error {
 	go func() {
 		a, err := agent.New(p.configPath)
 		if err != nil {
-			log.Fatalf("erro ao inicializar agente: %v", err)
+			//log.Fatalf("erro ao inicializar agente: %v", err)
+			logger.Logger("error", "erro ao incializar agente", "service.go:Start", err)
 		}
 		p.agent = a
 		p.agent.Run()

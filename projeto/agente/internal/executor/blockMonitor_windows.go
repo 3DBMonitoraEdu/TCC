@@ -3,7 +3,8 @@
 package executor
 
 import (
-	"log"
+	"agente/internal/logger"
+	//"log"
 	"runtime"
 	"syscall"
 	"unsafe"
@@ -265,7 +266,8 @@ func closeWindow() uintptr {
 }
 
 func LockMonitorByWindow(ctx context.Context) error {
-	log.Println("bloquear monitor")
+	//log.Println("bloquear monitor")
+	logger.Logger("info", "bloquear monitor", "blockkMonitor-windows:LockMontorByWindow", nil)
 	go createWindow()
 	params := make(map[string]int32)
 	LockMouseAndKeyboard(ctx, params)
@@ -273,7 +275,8 @@ func LockMonitorByWindow(ctx context.Context) error {
 }
 
 func unLockMonitorByWindow(ctx context.Context) error {
-	log.Println("desbloquear monitor")
+	//log.Println("desbloquear monitor")
+	logger.Logger("info", "desbloquear monitor", "blockMonitor-windows:unLockMontorByWindow", nil)
 	if blockHwnd != 0 {
 		closeWindow()
 		blockHwnd = 0

@@ -31,7 +31,8 @@ jobs:
         working-directory: ./projeto/agente
         run: |
           LDFLAGS="-s -w -X main.AppVersion=${{ env.VERSION }}"
-          
+          LDFLAGS_SESSION="-s -w -H=windowsgui -X main.AppVersion=${{ env.VERSION }}"
+
           # Garantir que a pasta build existe
           mkdir -p build
 
@@ -43,7 +44,7 @@ jobs:
           # 2. Build Windows amd64 (Gerando os arquivos que o Inno Setup precisa)
           # O Inno Setup espera "agente.exe" e "agente-session.exe" dentro de "build/"
           GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o build/agente.exe ./cmd/agente
-          GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o build/agente-session.exe ./cmd/agente-session
+          GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS_SESSION" -o build/agente-session.exe ./cmd/agente-session
           
           # O config.json já deve estar na pasta build/ pelo seu repositório, 
           # mas se precisar copiar de outro lugar, seria aqui.

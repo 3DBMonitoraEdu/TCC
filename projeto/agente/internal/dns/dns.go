@@ -1,7 +1,9 @@
 package dns
 
 import (
-	"log"
+	//"log"
+	"agente/internal/logger"
+	"fmt"
 	"strings"
 	"sync"
 
@@ -22,7 +24,8 @@ func isBlocked(domain string) bool {
 	domain = strings.ToLower(domain)
 
 	if blocked[domain] {
-		log.Printf("domain block = %s", domain)
+		//log.Printf("domain block = %s", domain)
+		logger.Logger("info", fmt.Sprintf("domain block = %s", domain), "dns:isBlocked", nil)
 		return true
 	}
 
@@ -31,7 +34,7 @@ func isBlocked(domain string) bool {
 	for i := range parts {
 		candidate := strings.Join(parts[i:], ".")
 		if blocked[candidate] {
-			log.Printf("subDomain block = %s", candidate)
+			//log.Printf("subDomain block = %s", candidate)
 			return true
 		}
 	}
@@ -44,8 +47,8 @@ func handleDNS(w dns.ResponseWriter, r *dns.Msg) {
 	msg.SetReply(r)
 
 	if len(r.Question) > 0 {
-		qName := r.Question[0].Name
-		log.Print(qName)
+		//qName := r.Question[0].Name
+		//log.Print(qName)
 	}
 	for _, question := range r.Question {
 		domain := strings.TrimSuffix(question.Name, ".")
@@ -81,10 +84,12 @@ func CreateLocalDns() {
 		Net:  "udp",
 	}
 
-	log.Print("DNS filter running in port :53")
+	//log.Print("DNS filter running in port :53")
+	logger.Logger("infor", "DNS filter runninf in port :53", "dns:CreateLocalDns", nil)
 
 	if err := server.ListenAndServe(); err != nil {
-		log.Printf("erro ao iniciar servidor DNS local: %v", err)
+		//log.Printf("erro ao iniciar servidor DNS local: %v", err)
+		logger.Logger("error", "erro ao iniciar servidor DNS local", "dns:CreateLocalDns", err)
 	}
 }
 
