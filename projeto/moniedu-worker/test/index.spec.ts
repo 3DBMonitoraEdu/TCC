@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { getAgentMetrics } from "../src/services/agents";
 import { getRoomAgents } from "../src/services/rooms";
 import { createSchool } from "../src/services/schools";
+import { updateDnsPolicy } from "../src/services/dns";
 
 describe("authentication", () => {
 	it("creates a user through the email signup route", async () => {
@@ -107,7 +108,7 @@ describe("agent metrics", () => {
 			}),
 		});
 
-		expect(firstResponse.status).toBe(200);
+		expect(firstResponse.status).toBe(201);
 
 		const secondResponse = await SELF.fetch("http://localhost/agent/agent-1/metrics", {
 			method: "POST",
@@ -137,7 +138,7 @@ describe("agent metrics", () => {
 			}),
 		});
 
-		expect(secondResponse.status).toBe(200);
+		expect(secondResponse.status).toBe(201);
 
 		const stored = await env.moniedu.prepare(`
 			SELECT cpu_percent, processes_json
@@ -172,6 +173,70 @@ describe("agent metrics", () => {
 		const room = await getRoomAgents("1", "teacher-1");
 		expect(room.error).toBe(false);
 		expect(room.agents?.[0]?.last_active_process).toBe("newest");
+	});
+});
+
+describe("agent DNS", () => {
+	it("stores the latest visited domains and returns only the active rule list", async () => {
+		await env.moniedu.batch([
+			env.moniedu.prepare("INSERT INTO schools (id, name) VALUES (?, ?)").bind(1, "Test School"),
+			env.moniedu.prepare(`
+				INSERT INTO rooms (id, school_id, teacher_id, name, join_code)
+				VALUES (?, ?, ?, ?, ?)
+			`).bind(1, 1, "teacher-1", "Room", "test-code"),
+			env.moniedu.prepare(`
+				INSERT INTO agents (id, room_id, agent_uuid, hostname)
+				VALUES (?, ?, ?, ?)
+			`).bind(1, 1, "agent-1", "host-1"),
+		]);
+
+		const firstResponse = await SELF.fetch("http://localhost/agent/dns", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				agentUuid: "agent-1",
+				visited: ["Example.COM.", "example.com", "docs.example.com"],
+			}),
+		});
+
+		expect(firstResponse.status).toBe(200);
+		expect(await firstResponse.json()).toEqual({
+			error: false,
+			mode: "blocklist",
+			domains: [],
+		});
+
+		const firstStored = await env.moniedu.prepare(
+			"SELECT visited FROM dns WHERE agent_id = ?",
+		).bind(1).first<string>("visited");
+		expect(JSON.parse(firstStored ?? "[]")).toEqual(["example.com", "docs.example.com"]);
+
+		const updated = await updateDnsPolicy("agent-1", {
+			mode: "allowlist",
+			blockedDomains: ["Blocked.Example.COM."],
+			allowedDomains: ["Allowed.Example.COM."],
+		});
+		expect(updated).toEqual({
+			error: false,
+			policy: {
+				mode: "allowlist",
+				blockedDomains: ["blocked.example.com"],
+				allowedDomains: ["allowed.example.com"],
+			},
+		});
+
+		const secondResponse = await SELF.fetch("http://localhost/agent/dns", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ agentUuid: "agent-1", visited: ["portal.example.com"] }),
+		});
+
+		expect(secondResponse.status).toBe(200);
+		expect(await secondResponse.json()).toEqual({
+			error: false,
+			mode: "allowlist",
+			domains: ["allowed.example.com"],
+		});
 	});
 });
 

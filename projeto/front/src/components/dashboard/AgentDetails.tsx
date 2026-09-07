@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import { Clock, Cpu, Database, HardDrive, Monitor } from "lucide-react";
 
 import { AgentControls } from "@/components/dashboard/AgentControls";
+import { DnsPolicyEditor } from "@/components/dashboard/DnsPolicyEditor";
 import { AgentStatusBadge } from "@/components/dashboard/AgentStatusBadge";
 import { ProcessList } from "@/components/dashboard/ProcessList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,6 +67,8 @@ export function AgentDetails({
         </div>
 
         <AgentControls executingCommand={executingCommand} onSendCommand={onSendCommand} />
+
+        <DnsPolicyEditor agentUuid={agent.agent_uuid} />
       </CardContent>
     </Card>
   );

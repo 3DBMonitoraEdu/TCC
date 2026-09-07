@@ -8,35 +8,30 @@ import (
 	"github.com/miekg/dns"
 )
 
-var blocked = map[string]bool{
-	"exemple":     true,
-	"chatgpt.com": true,
-}
-
 var (
 	visitedDomains   []string
 	visitedDomainsMu sync.Mutex
 )
 
 func isBlocked(domain string) bool {
-	domain = strings.ToLower(domain)
+	domain = normalizeDomain(domain)
 
-	if blocked[domain] {
-		log.Printf("domain block = %s", domain)
-		return true
-	}
+	policyMu.RLock()
+	mode := policyMode
+	matches := matchesDomain(policyDomains, domain)
+	policyMu.RUnlock()
 
-	parts := strings.Split(domain, ".")
-
-	for i := range parts {
-		candidate := strings.Join(parts[i:], ".")
-		if blocked[candidate] {
-			log.Printf("subDomain block = %s", candidate)
-			return true
+	if mode == ModeAllowlist {
+		if !matches {
+			log.Printf("domain not allowed = %s", domain)
 		}
+		return !matches
 	}
 
-	return false
+	if matches {
+		log.Printf("domain block = %s", domain)
+	}
+	return matches
 }
 
 func handleDNS(w dns.ResponseWriter, r *dns.Msg) {
@@ -99,4 +94,17 @@ func GetLatestDomain() []string {
 	buffer := visitedDomains
 	visitedDomains = make([]string, 0)
 	return buffer
+}
+
+func RestoreVisitedDomains(domains []string) {
+	if len(domains) == 0 {
+		return
+	}
+
+	visitedDomainsMu.Lock()
+	defer visitedDomainsMu.Unlock()
+
+	restored := make([]string, 0, len(domains)+len(visitedDomains))
+	restored = append(restored, domains...)
+	visitedDomains = append(restored, visitedDomains...)
 }

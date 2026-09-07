@@ -131,8 +131,8 @@ func (a *Agent) collect() {
 		metrics.Processes = []collector.ProcessInfo{}
 	}
 
-	log.Printf("coletado — CPU: %.1f%% RAM: %.1f%% Disco: %.1f%% Processos: %d Site: %v",
-		metrics.CPUPercent, metrics.MemPercent, metrics.DiskPercent, len(metrics.Processes), metrics.Dnslatest)
+	log.Printf("coletado — CPU: %.1f%% RAM: %.1f%% Disco: %.1f%% Processos: %d",
+		metrics.CPUPercent, metrics.MemPercent, metrics.DiskPercent, len(metrics.Processes))
 
 	dns.ChangeDNS()
 
@@ -140,16 +140,27 @@ func (a *Agent) collect() {
 
 	if err != nil {
 		log.Printf("erro ao enviar metricas: %v", err)
-		return
-	}
-	log.Printf("metricas enviadas com sucesso")
-	if resp != "" {
-		log.Printf("comando recebido para executar: %s", resp)
-		select {
-		case a.cmdChan <- ipc.Command{Data: resp}:
-		default:
-			log.Printf("⚠️ Canal de comandos do Named Pipe cheio. Comando ignorado: %s", resp)
+	} else {
+		log.Printf("metricas enviadas com sucesso")
+		if resp != "" {
+			log.Printf("comando recebido para executar: %s", resp)
+			select {
+			case a.cmdChan <- ipc.Command{Data: resp}:
+			default:
+				log.Printf("⚠️ Canal de comandos do Named Pipe cheio. Comando ignorado: %s", resp)
+			}
 		}
+	}
+
+	visitedDomains := dns.GetLatestDomain()
+	policy, err := a.client.SyncDNS(a.cfg.AgentUUID, visitedDomains)
+	if err != nil {
+		dns.RestoreVisitedDomains(visitedDomains)
+		log.Printf("erro ao sincronizar DNS: %v", err)
+	} else if err := dns.UpdatePolicy(policy.Mode, policy.Domains); err != nil {
+		log.Printf("política DNS recebida é inválida: %v", err)
+	} else {
+		log.Printf("política DNS aplicada: modo %s, domínios %d", policy.Mode, len(policy.Domains))
 	}
 
 	self, err := collector.CollectSelf()

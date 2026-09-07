@@ -40,6 +40,16 @@ type RegisterResponse struct {
 	Hostname  string `json:"hostname"`
 }
 
+type DnsMetricsRequest struct {
+	AgentUUID string   `json:"agentUuid"`
+	Visited   []string `json:"visited"`
+}
+
+type DnsPolicyResponse struct {
+	Mode    string   `json:"mode"`
+	Domains []string `json:"domains"`
+}
+
 func (c *Client) Register(req RegisterRequest) (*RegisterResponse, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -108,4 +118,32 @@ func (c *Client) SendMetrics(AgentUUID string, metrics *collector.Metrics) (stri
 	}
 
 	return "", nil
+}
+
+func (c *Client) SyncDNS(agentUUID string, visited []string) (*DnsPolicyResponse, error) {
+	body, err := json.Marshal(DnsMetricsRequest{
+		AgentUUID: agentUUID,
+		Visited:   visited,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("erro ao serializar métricas DNS: %w", err)
+	}
+
+	url := c.baseURL + "/agent/dns"
+	resp, err := c.httpClient.Post(url, "application/json", bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("erro ao chamar %s: %w", url, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("servidor retornou status %d ao sincronizar DNS", resp.StatusCode)
+	}
+
+	var policy DnsPolicyResponse
+	if err := json.NewDecoder(resp.Body).Decode(&policy); err != nil {
+		return nil, fmt.Errorf("erro ao decodificar política DNS: %w", err)
+	}
+
+	return &policy, nil
 }

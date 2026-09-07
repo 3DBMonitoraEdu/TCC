@@ -26,6 +26,24 @@ export type AgentPayload = {
 	processes: AgentProcesses[];
 };
 
+export type DnsMode = "blocklist" | "allowlist";
+
+export type AgentDnsPayload = {
+	agentUuid: string;
+	visited: string[];
+};
+
+export type AgentDnsPolicy = {
+	mode: DnsMode;
+	domains: string[];
+};
+
+export type DnsPolicy = {
+	mode: DnsMode;
+	blockedDomains: string[];
+	allowedDomains: string[];
+};
+
 export type AgentProcesses = {
 	pid: number;
 	name: string;
@@ -45,4 +63,3 @@ export type CreateRoomBody = {
 export type CreateSchoolBody = {
 	name: string;
 };
-
