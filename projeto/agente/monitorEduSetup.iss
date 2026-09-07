@@ -46,7 +46,7 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 [Files]
     Source: "build\{#MyExeName}"; DestDir: "{app}"; Flags: ignoreversion
     Source: "build\{#MyUIExeName}"; DestDir: "{app}"; Flags: ignoreversion
-    Source: "build\config.json"; DestDir: "{commonappdata}\MoniTec"; Flags: onlyifdoesntexist; Permissions: users-modify
+    Source: "build\config.json"; DestDir: "{commonappdata}\MonitorEdu"; Flags: onlyifdoesntexist; Permissions: users-modify
 
 ; ============================================================
 ; INICIALIZAÇÃO NO LOGON (REGISTRY)

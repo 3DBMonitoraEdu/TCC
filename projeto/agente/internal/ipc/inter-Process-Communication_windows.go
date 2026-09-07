@@ -3,10 +3,12 @@
 package ipc
 
 import (
+	"agente/internal/logger"
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
+
+	//"log"
 	"net"
 	"sync"
 	"time"
@@ -112,7 +114,8 @@ func StartComandoPipeServer(cmdChan <-chan Command) error {
 			conn, err := listener.Accept()
 			if err != nil {
 				if errors.Is(err, winio.ErrPipeListenerClosed) {
-					log.Println("pipe listener foi fechado, encerrando loop de aceitação")
+					//log.Println("pipe listener foi fechado, encerrando loop de aceitação")
+					logger.Logger("error", "pipe listener foi fechado, encerrando loop de aceitação", "IPC-Windows:StartComandPipeServer", err)
 					return // sai da goroutine de vez, não tenta mais
 				}
 				continue

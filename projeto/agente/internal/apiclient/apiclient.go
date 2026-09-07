@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"agente/internal/collector"
+	"agente/internal/logger"
 )
 
 type Client struct {
@@ -101,7 +102,9 @@ func (c *Client) SendMetrics(AgentUUID string, metrics *collector.Metrics) (stri
 	errJ := json.Unmarshal([]byte(res), &result)
 
 	if errJ != nil {
-		fmt.Printf("Erro ao ler JSON: %v", errJ)
+		//fmt.Printf("Erro ao ler JSON: %v", errJ)
+		logger.Logger("error", "erro ao ler JSON", "apiclient:SendMetrics", errJ)
+
 	}
 
 	if command, ok := result["command"]; ok {
@@ -113,7 +116,7 @@ func (c *Client) SendMetrics(AgentUUID string, metrics *collector.Metrics) (stri
 		}
 	}
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("servidor retornou status %d ao enviar metricas", resp.StatusCode)
 	}
 

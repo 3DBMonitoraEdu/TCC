@@ -2,7 +2,8 @@ package updater
 
 import (
 	"fmt"
-	"log"
+	//"log"
+	"agente/internal/logger"
 	"runtime"
 
 	"github.com/mouuff/go-rocket-update/pkg/provider"
@@ -35,7 +36,8 @@ var DevelopmentMode = true
 
 func CheckAndUpdate(appVersion string) error {
 	if DevelopmentMode {
-		log.Println("modo de desenvolvimento ativo!!!. atualizações desativadas!!!.")
+		//log.Println("modo de desenvolvimento ativo!!!. atualizações desativadas!!!.")
+		logger.Logger("info", "modo de desenvolvimento ativo, atualizações desativadas", "updater:CheckAndUpdate", nil)
 		return nil
 	}
 
@@ -53,18 +55,22 @@ func CheckAndUpdate(appVersion string) error {
 		return fmt.Errorf("erro ao verificar versão: %w", err)
 	}
 
-	log.Printf("Versão Atual [%s] Versão mais recente [%s]", appVersion, latest)
+	//log.Printf("Versão Atual [%s] Versão mais recente [%s]", appVersion, latest)
+	logger.Logger("info", fmt.Sprintf("Versão Atual [%s] versão mais recente [%s]", appVersion, latest), "updater:CheckAndUpdate", nil)
 
 	updateStatus, err := u.Update()
 	if err != nil {
+		logger.Logger("error", "erro ao atualizar", "updater:CheckAndUpdate", nil)
 		return fmt.Errorf("erro ao atualizar: %w", err)
 	}
 
 	switch updateStatus {
 	case updater.Updated:
-		log.Println("✅ Atualização aplicada com sucesso! Reinicie o app.")
+		//log.Println("✅ Atualização aplicada com sucesso! Reinicie o app.")
+		logger.Logger("info", "atualizaçõa aplicada com sucesso", "updater:CheckAndUpdate", nil)
 	case updater.UpToDate:
-		log.Println("App já está em sua ultima versão.")
+		//log.Println("App já está em sua ultima versão.")
+		logger.Logger("info", "Agente já esta em sua ultima versão", "updater:CheckAndUpdate", nil)
 	}
 
 	return nil

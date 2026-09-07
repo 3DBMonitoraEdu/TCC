@@ -1,8 +1,9 @@
 package config
 
 import (
+	"agente/internal/logger"
 	"encoding/json"
-	"log"
+	"fmt"
 	"os"
 )
 
@@ -49,11 +50,13 @@ func Save(path string, cfg Config) error {
 		return err
 	}
 
-	log.Printf("Salvando em: %s", path)
+	//log.Printf("Salvando em: %s", path)
+	logger.Logger("info", fmt.Sprintf("Salvando config em: %s", path), "config:Save", nil)
 
 	err = os.WriteFile(path, data, 0o644)
 	if err != nil {
-		log.Printf("WriteFile erro (%T): %v", err, err)
+		//log.Printf("WriteFile erro (%T): %v", err, err)
+		logger.Logger("error", "WriterFile Erro", "config:Save", err)
 		return err
 	}
 
