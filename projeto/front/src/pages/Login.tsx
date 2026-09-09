@@ -152,15 +152,6 @@ export default function Login() {
                 {loading ? "Entrando..." : "Entrar"}
               </Button>
 
-              <p className="text-sm text-center text-slate-600">
-                Não tem uma conta?{" "}
-                <a
-                  href="/signup"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Criar conta
-                </a>
-              </p>
             </CardFooter>
           </form>
         </Card>
