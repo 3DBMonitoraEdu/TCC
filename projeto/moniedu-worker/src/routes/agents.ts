@@ -119,7 +119,7 @@ agent.post("/:agentUuid/metrics", async (c) => {
 
 	if (cmd.status === 1) await UpdateCommand(agentUuid);
 
-	return c.json(cmd, 201);
+	return c.json(cmd, 200);
 });
 
 
