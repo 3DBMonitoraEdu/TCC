@@ -23,7 +23,7 @@ func main() {
 		configPath = "C:\\ProgramData\\MonitorEdu\\config.json"
 
 	case "linux":
-		configPath = "/tmp/MoniTec/config.json"
+		configPath = "/etc/monitoredu/config.json"
 
 	}
 	_, err := setup.CheckJoinCode(configPath)

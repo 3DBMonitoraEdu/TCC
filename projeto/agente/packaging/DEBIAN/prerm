@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+  remove|deconfigure)
+    if [ -d /run/systemd/system ]; then
+      systemctl stop monitoredu.service >/dev/null 2>&1 || true
+      systemctl disable monitoredu.service >/dev/null 2>&1 || true
+    fi
+    pkill -f monitoredu-session >/dev/null 2>&1 || true
+    ;;
+esac
+
+exit 0

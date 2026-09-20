@@ -1,0 +1,26 @@
+MoniTec Agent - Projeto MonitoraEdu
+=====================================
+
+Antes de continuar, veja o que este instalador vai fazer no computador:
+
+1. Instala o agente MoniTec como um Serviço do Windows, configurado
+   para iniciar automaticamente com o sistema e se recuperar sozinho
+   em caso de falha.
+
+2. Registra um segundo componente (agente-session.exe) para abrir a
+   interface do agente sempre que um usuário fizer login.
+
+3. Altera o servidor DNS das interfaces de rede ativas para
+   127.0.0.1, para que o agente possa monitorar e bloquear o acesso
+   a sites conforme a política definida pela escola.
+
+4. Cria a pasta de configuração e logs em:
+   C:\ProgramData\MoniTec
+
+Ao desinstalar o MoniTec Agent, o serviço é removido, o DNS volta ao
+padrão automático e todos os arquivos de configuração e logs são
+apagados.
+
+O MonitoraEdu é um projeto de código aberto, desenvolvido como
+Trabalho de Conclusão de Curso. Código-fonte disponível em:
+https://github.com/3DBMonitoraEdu/TCC

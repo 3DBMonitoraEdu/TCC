@@ -1,0 +1,9 @@
+Package: monitoredu
+Version: 0.2.0
+Section: admin
+Priority: optional
+Architecture: amd64
+Depends: systemd, iproute2
+Maintainer: 3DB26-MonitorEdu <monitoredu@monitoraedu.vercel.app>
+Description: agente Golang
+ O agente é o componente periférico do MoniTec, executado em segundo plano nos PCs dos alunos. Ele foi projetado para ser leve, autônomo e de fácil distribuição.

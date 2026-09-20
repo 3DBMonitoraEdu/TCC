@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"agente/internal/platform"
+	"agente/internal/services"
 	"agente/internal/updater"
 	"runtime"
 
@@ -24,13 +24,13 @@ func main() {
 		configPath = "C:\\ProgramData\\MonitorEdu\\config.json"
 
 	case "linux":
-		configPath = "/tmp/MoniTec/config.json"
+		configPath = "/etc/monitoredu/config.json"
 
 	}
 	//log.Printf("Iniciando MyApp -- %s", AppVersion)
 	logger.Logger("info", ("Iniciando Agente-WS " + AppVersion), "agente/main.go:main", nil)
 
-	svc, err := platform.NewService(configPath)
+	svc, err := services.NewService(configPath)
 	if err != nil {
 		//log.Fatalf("erro ao criar serviço: %v", err)
 		logger.Logger("error", "erro ao criar serviço", "agente/main.go:main", err)

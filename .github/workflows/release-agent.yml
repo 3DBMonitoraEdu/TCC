@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'   # ex: v1.0.0, v2.3.1, v1.0.0-beta.1
-    paths:
-      - 'projeto/agente/**'
 
 jobs:
   build-and-release:
@@ -26,6 +24,21 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.26.4'
+    
+      - name: Instalar ferramenta para build de RPM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Gerar pacotes Linux (.deb e .rpm)
+        working-directory: ./projeto/agente
+        run: |
+          # Limpa o 'v' inicial se existir (ex: v0.2.0 -> 0.2.0)
+          PKG_VERSION="${VERSION#v}"
+
+          chmod +x build-deb.sh build-rpm.sh
+          ./build-deb.sh "$PKG_VERSION"
+          ./build-rpm.sh "$PKG_VERSION"
 
       - name: Build para todas as plataformas
         working-directory: ./projeto/agente
@@ -46,9 +59,6 @@ jobs:
           GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o build/agente.exe ./cmd/agente
           GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS_SESSION" -o build/agente-session.exe ./cmd/agente-session
           
-          # O config.json já deve estar na pasta build/ pelo seu repositório, 
-          # mas se precisar copiar de outro lugar, seria aqui.
-
           # Zip com os binários avulsos do Windows (mantido caso alguém queira usar sem o instalador)
           zip -j moniedu_windows_amd64.zip build/agente.exe build/agente-session.exe
 
@@ -60,7 +70,7 @@ jobs:
           path: projeto/agente/build/
           retention-days: 1
 
-      - name: Criar GitHub Release e fazer upload dos zips
+      - name: Criar GitHub Release e fazer upload dos pacotes
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
@@ -69,6 +79,8 @@ jobs:
             🚀 Release automática gerada pelo CI/CD
             Commit: ${{ github.sha }}
           files: |
+            projeto/agente/dist/*.deb
+            projeto/agente/dist/*.rpm
             projeto/agente/moniedu_linux_amd64.zip
             projeto/agente/moniedu_windows_amd64.zip
           make_latest: true

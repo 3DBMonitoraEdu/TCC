@@ -1,0 +1,10 @@
+PACOTE VISUAL MONITOR-EDU
+
+monitec.ico: ícone principal com 16, 20, 24, 32, 40, 48, 64, 96, 128 e 256 px incorporados.
+icons_individuais_16_a_256/: 241 arquivos ICO, um para cada dimensão inteira.
+wizard-side.bmp: arte lateral 164x314 px, BMP RGB 24 bits.
+wizard-small.bmp: arte pequena 55x58 px, BMP RGB 24 bits.
+monitec-logo-master.png: arquivo mestre 1024x1024 com transparência.
+
+Arte principal: iconepaginas.jpeg fornecida pelo usuário.
+Paleta: azul-marinho #071426 / #0B2039, azul institucional e ciano.
