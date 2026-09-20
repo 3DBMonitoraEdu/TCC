@@ -23,7 +23,7 @@ install -Dpm 0755 %{_sourcedir}/dist/%{name} %{buildroot}%{_bindir}/%{name}
 install -Dpm 0755 %{_sourcedir}/dist/%{name}-session %{buildroot}%{_bindir}/%{name}-session
 
 # Serviço Systemd
-install -Dpm 0644 %{_sourcedir}/packaging/lib/systemd/system/%{name}.service %{buildroot}%{_unitdir}/%{name}.service
+install -Dpm 0644 packaging/lib/systemd/system/monitoredu.service %{buildroot}/usr/lib/systemd/system/monitoredu.service
 
 # Autostart da sessão do aluno
 install -Dpm 0644 %{_sourcedir}/packaging/etc/xdg/autostart/%{name}-session.desktop %{buildroot}%{_sysconfdir}/xdg/autostart/%{name}-session.desktop
