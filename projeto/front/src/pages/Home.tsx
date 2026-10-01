@@ -2,9 +2,11 @@ import { ArrowRight, AlertTriangle, Github } from "lucide-react";
 import { Link } from "react-router-dom";
 import { authClient } from "@/lib/auth-client";
 
-import { Bar, 
+import { Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  LabelList,
   XAxis,
   YAxis,
  } from "recharts"
@@ -23,6 +25,9 @@ const setupData = [
   {software: "LanSchool Air", RAM: 100, Disk: 0.0, TimeConfig: 25 },
   {software: "Veyon", RAM: 50, Disk: 90, TimeConfig: 45 }
 ];
+
+const MONITEC_COLOR = "#061a35";
+const COMPETITOR_COLOR = "#287fdf";
 
 
 const setupChartConfig = {
@@ -51,6 +56,11 @@ const solutions = [
     title: "Limita e protege dados",
     text: "Processos inteligentes que protegem seu sistema",
   },
+  {
+    number: "03",
+    title: "Bloqueio de sites",
+    text: "Nosso agente bloqueia sites definidos pelo professor, e possibilita a visualização de sites acessados"
+  }
 ];
 
 const steps = [
@@ -259,34 +269,52 @@ export default function Home() {
 
           <ChartContainer
             config={setupChartConfig}
-            className="h-[260px] w-full"
+            className="h-[290px] w-full"
           >
             <BarChart
               accessibilityLayer
               data={setupData}
-              margin={{ top: 12, right: 12, left: 0, bottom: 8 }}
+              layout="vertical"
+              margin={{ top: 8, right: 42, left: 12, bottom: 8 }}
             >
-              <CartesianGrid vertical={false} />
+              <CartesianGrid horizontal={false} stroke="#8cb6e5" strokeOpacity={0.35} />
               <XAxis
+                type="number"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "#536983", fontSize: 12 }}
+                unit=" MB"
+              />
+              <YAxis
+                type="category"
                 dataKey="software"
                 tickLine={false}
                 axisLine={false}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={36}
-                label={{ value: "MB", angle: -90, position: "insideLeft" }}
+                width={92}
+                tick={{ fill: "#071a36", fontSize: 12, fontWeight: 600 }}
               />
               <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent />}
+                cursor={{ fill: "rgba(6, 26, 53, 0.08)" }}
+                content={<ChartTooltipContent formatter={(value) => `${value} MB`} />}
               />
               <Bar
                 dataKey="RAM"
-                fill="var(--color-RAM)"
-                radius={6}
-              />
+                radius={[0, 6, 6, 0]}
+              >
+                {setupData.map((item) => (
+                  <Cell
+                    key={item.software}
+                    fill={item.software === "Monitec" ? MONITEC_COLOR : COMPETITOR_COLOR}
+                  />
+                ))}
+                <LabelList
+                  dataKey="RAM"
+                  position="right"
+                  formatter={(value: number) => `${value} MB`}
+                  fill="#071a36"
+                  fontSize={12}
+                />
+              </Bar>
             </BarChart>
           </ChartContainer>
 
@@ -300,80 +328,116 @@ export default function Home() {
 
   <ChartContainer
     config={setupChartConfig}
-    className="h-[260px] w-full"
+    className="h-[290px] w-full"
   >
     <BarChart
       accessibilityLayer
       data={setupData}
-      margin={{ top: 12, right: 12, left: 0, bottom: 8 }}
+      layout="vertical"
+      margin={{ top: 8, right: 42, left: 12, bottom: 8 }}
     >
-      <CartesianGrid vertical={false} />
+      <CartesianGrid horizontal={false} stroke="#8cb6e5" strokeOpacity={0.35} />
       <XAxis
+        type="number"
+        tickLine={false}
+        axisLine={false}
+        tick={{ fill: "#536983", fontSize: 12 }}
+        unit=" MB"
+      />
+      <YAxis
+        type="category"
         dataKey="software"
         tickLine={false}
         axisLine={false}
-      />
-      <YAxis
-        tickLine={false}
-        axisLine={false}
-        width={36}
-        label={{ value: "MB", angle: -90, position: "insideLeft" }}
+        width={92}
+        tick={{ fill: "#071a36", fontSize: 12, fontWeight: 600 }}
       />
       <ChartTooltip
-        cursor={false}
-        content={<ChartTooltipContent />}
+        cursor={{ fill: "rgba(6, 26, 53, 0.08)" }}
+        content={<ChartTooltipContent formatter={(value) => `${value} MB`} />}
       />
       <Bar
         dataKey="Disk"
-        fill="var(--color-Disk)"
-        radius={6}
-      />
+        radius={[0, 6, 6, 0]}
+      >
+        {setupData.map((item) => (
+          <Cell
+            key={item.software}
+            fill={item.software === "Monitec" ? MONITEC_COLOR : COMPETITOR_COLOR}
+          />
+        ))}
+        <LabelList
+          dataKey="Disk"
+          position="right"
+          formatter={(value: number) => `${value} MB`}
+          fill="#071a36"
+          fontSize={12}
+        />
+      </Bar>
     </BarChart>
   </ChartContainer>
 
   
         </div>
 
-        <div className="rounded-2xl bg-[#b9d3fb] px-6 py-7">
+        <div className="rounded-2xl bg-[#b9d3fb] px-6 py-7 md:col-span-2">
   <h3 className="mb-4 text-center text-xl font-extrabold">
     Tempo médio de configuração
   </h3>
 
   <ChartContainer
     config={setupChartConfig}
-    className="h-[260px] w-full"
+    className="h-[290px] w-full"
   >
     <BarChart
       accessibilityLayer
       data={setupData}
-      margin={{ top: 12, right: 12, left: 0, bottom: 8 }}
+      layout="vertical"
+      margin={{ top: 8, right: 48, left: 12, bottom: 8 }}
     >
-      <CartesianGrid vertical={false} />
+      <CartesianGrid horizontal={false} stroke="#8cb6e5" strokeOpacity={0.35} />
       <XAxis
+        type="number"
+        tickLine={false}
+        axisLine={false}
+        tick={{ fill: "#536983", fontSize: 12 }}
+        unit=" min"
+      />
+      <YAxis
+        type="category"
         dataKey="software"
         tickLine={false}
         axisLine={false}
-      />
-      <YAxis
-        tickLine={false}
-        axisLine={false}
-        width={36}
-        label={{ value: "minutos", angle: -90, position: "insideLeft" }}
+        width={92}
+        tick={{ fill: "#071a36", fontSize: 12, fontWeight: 600 }}
       />
       <ChartTooltip
-        cursor={false}
-        content={<ChartTooltipContent />}
+        cursor={{ fill: "rgba(6, 26, 53, 0.08)" }}
+        content={<ChartTooltipContent formatter={(value) => `${value} min`} />}
       />
       <Bar
         dataKey="TimeConfig"
-        fill="var(--color-TimeConfig)"
-        radius={6}
-      />
+        radius={[0, 6, 6, 0]}
+      >
+        {setupData.map((item) => (
+          <Cell
+            key={item.software}
+            fill={item.software === "Monitec" ? MONITEC_COLOR : COMPETITOR_COLOR}
+          />
+        ))}
+        <LabelList
+          dataKey="TimeConfig"
+          position="right"
+          formatter={(value: number) => `${value} min`}
+          fill="#071a36"
+          fontSize={12}
+        />
+      </Bar>
     </BarChart>
   </ChartContainer>
 
   <p className="mt-3 text-center text-sm text-[#536983]">
-    A Monitec leva 95% menos tempo neste exemplo.
+    Neste comparativo, a Monitec configura até 92% mais rápido.
   </p>
 </div>
 
@@ -390,11 +454,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="flex flex-col items-center justify-center text-center">
-            <AlertTriangle className="h-16 w-16 text-red-600" strokeWidth={2.5} />
-            <div className="mt-2 text-base font-extrabold text-black">Em breve bloqueio de sites!</div>
-          </div>
-        </div>
+                  </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {steps.map((step) => (
