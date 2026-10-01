@@ -210,7 +210,7 @@ export default function Dashboard() {
     ? "Detalhes, processos e controles do computador"
     : selectedRoom
       ? "Computadores conectados à sala"
-      : `Bem-vindo${session?.user.name ? `, ${session.user.name}` : ""}`;
+      : `Bem-vindo${session?.user?.name ? `, ${session.user.name}` : ""}`;
 
   return (
     <main className="min-h-screen bg-slate-50 p-4 sm:p-6">

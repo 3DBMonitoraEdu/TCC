@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Globe2, RefreshCw, Save, ShieldBan, ShieldCheck } from "lucide-react";
 
-import {
-  getAgentDnsPolicy,
-  updateAgentDnsPolicy,
-  type DnsMode,
-} from "@/api/agents";
+import { getAgentDnsPolicy, updateAgentDnsPolicy, type DnsMode } from "@/api/agents";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -44,6 +40,7 @@ export function DnsPolicyEditor({ agentUuid }: DnsPolicyEditorProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [visitedDomains, setVisitedDomains] = useState<string[]>([]);
 
   const loadPolicy = useCallback(async () => {
     setLoading(true);
@@ -54,6 +51,7 @@ export function DnsPolicyEditor({ agentUuid }: DnsPolicyEditorProps) {
       setMode(policy.mode);
       setBlockedDomains(domainsToText(policy.blockedDomains));
       setAllowedDomains(domainsToText(policy.allowedDomains));
+      setVisitedDomains(policy.visited);
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Não foi possível carregar a política DNS."));
     } finally {
@@ -89,9 +87,10 @@ export function DnsPolicyEditor({ agentUuid }: DnsPolicyEditorProps) {
     }
   };
 
-  const modeDescription = mode === "blocklist"
-    ? "Os domínios bloqueados e seus subdomínios não serão resolvidos."
-    : "Somente os domínios permitidos e seus subdomínios serão resolvidos.";
+  const modeDescription =
+    mode === "blocklist"
+      ? "Os domínios bloqueados e seus subdomínios não serão resolvidos."
+      : "Somente os domínios permitidos e seus subdomínios serão resolvidos.";
 
   return (
     <section className="space-y-4 border-t border-slate-100 pt-4">
@@ -103,7 +102,13 @@ export function DnsPolicyEditor({ agentUuid }: DnsPolicyEditorProps) {
           </h3>
           <p className="mt-1 text-xs text-slate-500">{modeDescription}</p>
         </div>
-        <Button type="button" variant="ghost" size="sm" onClick={() => void loadPolicy()} disabled={loading || saving}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => void loadPolicy()}
+          disabled={loading || saving}
+        >
           <RefreshCw className={loading ? "animate-spin" : ""} />
           Atualizar
         </Button>
@@ -115,7 +120,11 @@ export function DnsPolicyEditor({ agentUuid }: DnsPolicyEditorProps) {
         <form className="space-y-4" onSubmit={(event) => void handleSubmit(event)}>
           <div className="space-y-2">
             <Label htmlFor={`dns-mode-${agentUuid}`}>Modo de filtragem</Label>
-            <Select value={mode} onValueChange={(value) => setMode(value as DnsMode)} disabled={saving}>
+            <Select
+              value={mode}
+              onValueChange={(value) => setMode(value as DnsMode)}
+              disabled={saving}
+            >
               <SelectTrigger id={`dns-mode-${agentUuid}`}>
                 <SelectValue />
               </SelectTrigger>
@@ -156,10 +165,39 @@ export function DnsPolicyEditor({ agentUuid }: DnsPolicyEditorProps) {
             </div>
           </div>
 
+          <div className="space-y-2 border-t border-slate-100 pt-4">
+            <div className="flex items-center justify-between">
+              <Label>Domínios visitados</Label>
+              <span className="text-xs text-slate-500">{visitedDomains.length} encontrados</span>
+            </div>
+
+            {visitedDomains.length === 0 ? (
+              <p className="text-sm text-slate-500">
+                Nenhum domínio visitado foi sincronizado ainda.
+              </p>
+            ) : (
+              <ul className="max-h-48 divide-y overflow-y-auto rounded-md border border-slate-200 bg-slate-50">
+                {visitedDomains.map((domain) => (
+                  <li key={domain} className="px-3 py-2 font-mono text-sm text-slate-700">
+                    {domain}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <p className="text-xs text-slate-500">Use uma linha ou vírgula para cada domínio.</p>
 
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-          {success && <p role="status" className="text-sm text-green-700">{success}</p>}
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
+          {success && (
+            <p role="status" className="text-sm text-green-700">
+              {success}
+            </p>
+          )}
 
           <Button type="submit" disabled={saving}>
             <Save />

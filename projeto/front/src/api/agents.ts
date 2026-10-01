@@ -10,8 +10,13 @@ export interface DnsPolicy {
 }
 
 type DnsPolicyResponse = DnsPolicy & {
+  visited?: string[];
   error?: boolean;
   message?: string;
+};
+
+export interface DnsDashboardData extends DnsPolicy {
+  visited: string[];
 };
 
 async function getResponseError(response: Response, fallback: string): Promise<Error> {
@@ -39,7 +44,7 @@ export async function sendAgentCommand(agentUuid: string, command: string): Prom
   }
 }
 
-export async function getAgentDnsPolicy(agentUuid: string): Promise<DnsPolicy> {
+export async function getAgentDnsPolicy(agentUuid: string): Promise<DnsDashboardData> {
   const res = await api.get(`/agent/${agentUuid}/dns`);
   if (!res.ok) throw await getResponseError(res, "erro ao buscar política DNS");
 
@@ -50,6 +55,7 @@ export async function getAgentDnsPolicy(agentUuid: string): Promise<DnsPolicy> {
     mode: data.mode,
     blockedDomains: data.blockedDomains,
     allowedDomains: data.allowedDomains,
+    visited: data.visited ?? [],
   };
 }
 
