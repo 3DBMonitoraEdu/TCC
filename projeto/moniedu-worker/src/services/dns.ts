@@ -132,7 +132,7 @@ async function getDnsPolicy(agentUuid: string) {
 			COALESCE(d.mode, 'blocklist') AS mode,
 			COALESCE(d.blocked_domains, '[]') AS blocked_domains,
 			COALESCE(d.allowed_domains, '[]') AS allowed_domains,
-			COALESCE(d.visited, '[]') AS visited,
+			COALESCE(d.visited, '[]') AS visited
 		FROM agents a
 		LEFT JOIN dns d ON d.agent_id = a.id
 		WHERE a.agent_uuid = ?
