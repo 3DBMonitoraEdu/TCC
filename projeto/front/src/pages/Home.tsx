@@ -2,6 +2,44 @@ import { ArrowRight, AlertTriangle, Github } from "lucide-react";
 import { Link } from "react-router-dom";
 import { authClient } from "@/lib/auth-client";
 
+import { Bar, 
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+ } from "recharts"
+
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+
+const setupData = [
+  { software: "Monitec", RAM: 14, Disk: 14.5, TimeConfig: 5 },
+  { software: "AnyDesk", RAM: 25, Disk: 512, TimeConfig: 10 },
+  {software: "NetSupport", RAM: 256, Disk: 250, TimeConfig: 65 },
+  {software: "LanSchool Air", RAM: 100, Disk: 0.0, TimeConfig: 25 },
+  {software: "Veyon", RAM: 50, Disk: 90, TimeConfig: 45 }
+];
+
+
+const setupChartConfig = {
+  RAM: {
+    label: "Memória RAM",
+    color: "#287fdf",
+  },
+  Disk: {
+    label: "Espaço em Disco",
+    color: "#287fdf",
+  },
+  TimeConfig: {
+    label: "Tempo médio de configuração",
+    color: "#287fdf",
+  },
+} satisfies ChartConfig;
+
 const solutions = [
   {
     number: "01",
@@ -207,6 +245,140 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <div className="mx-auto mt-8 max-w-[1180px] px-5 sm:px-8 lg:px-10">
+        <h2 className="text-3xl font-extrabold text-[#174878]">
+          Comparativo de Desempenho
+        </h2>
+      </div>
+      <section className="mx-auto my-8 grid max-w-[1180px] grid-cols-1 gap-6 overflow-hidden rounded-2xl border border-[#174878] bg-[#f7f7f7] px-5 py-8 sm:px-8 md:grid-cols-2 lg:px-10">
+            
+        <div className="rounded-2xl bg-[#b9d3fb] px-6 py-7">
+          <h3 className="mb-4 text-center text-xl font-extrabold">
+            Memória RAM utilizada por softwares
+          </h3>
+
+          <ChartContainer
+            config={setupChartConfig}
+            className="h-[260px] w-full"
+          >
+            <BarChart
+              accessibilityLayer
+              data={setupData}
+              margin={{ top: 12, right: 12, left: 0, bottom: 8 }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="software"
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                width={36}
+                label={{ value: "MB", angle: -90, position: "insideLeft" }}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent />}
+              />
+              <Bar
+                dataKey="RAM"
+                fill="var(--color-RAM)"
+                radius={6}
+              />
+            </BarChart>
+          </ChartContainer>
+
+         
+        </div>
+
+        <div className="rounded-2xl bg-[#b9d3fb] px-6 py-7">
+  <h3 className="mb-4 text-center text-xl font-extrabold">
+    Espaço em Disco utilizado por softwares
+  </h3>
+
+  <ChartContainer
+    config={setupChartConfig}
+    className="h-[260px] w-full"
+  >
+    <BarChart
+      accessibilityLayer
+      data={setupData}
+      margin={{ top: 12, right: 12, left: 0, bottom: 8 }}
+    >
+      <CartesianGrid vertical={false} />
+      <XAxis
+        dataKey="software"
+        tickLine={false}
+        axisLine={false}
+      />
+      <YAxis
+        tickLine={false}
+        axisLine={false}
+        width={36}
+        label={{ value: "MB", angle: -90, position: "insideLeft" }}
+      />
+      <ChartTooltip
+        cursor={false}
+        content={<ChartTooltipContent />}
+      />
+      <Bar
+        dataKey="Disk"
+        fill="var(--color-Disk)"
+        radius={6}
+      />
+    </BarChart>
+  </ChartContainer>
+
+  
+        </div>
+
+        <div className="rounded-2xl bg-[#b9d3fb] px-6 py-7">
+  <h3 className="mb-4 text-center text-xl font-extrabold">
+    Tempo médio de configuração
+  </h3>
+
+  <ChartContainer
+    config={setupChartConfig}
+    className="h-[260px] w-full"
+  >
+    <BarChart
+      accessibilityLayer
+      data={setupData}
+      margin={{ top: 12, right: 12, left: 0, bottom: 8 }}
+    >
+      <CartesianGrid vertical={false} />
+      <XAxis
+        dataKey="software"
+        tickLine={false}
+        axisLine={false}
+      />
+      <YAxis
+        tickLine={false}
+        axisLine={false}
+        width={36}
+        label={{ value: "minutos", angle: -90, position: "insideLeft" }}
+      />
+      <ChartTooltip
+        cursor={false}
+        content={<ChartTooltipContent />}
+      />
+      <Bar
+        dataKey="TimeConfig"
+        fill="var(--color-TimeConfig)"
+        radius={6}
+      />
+    </BarChart>
+  </ChartContainer>
+
+  <p className="mt-3 text-center text-sm text-[#536983]">
+    A Monitec leva 95% menos tempo neste exemplo.
+  </p>
+</div>
+
+      </section>
+
 
       <section className="mx-auto my-8 max-w-[1180px] overflow-hidden rounded-2xl border border-[#174878] bg-[#f7f7f7] px-5 py-8 sm:px-8 lg:px-10">
         <div className="grid gap-8 lg:grid-cols-[1fr_240px]">
