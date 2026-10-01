@@ -89,10 +89,10 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 
 ; ---- Textos customizados do assistente (sobrescreve os padrões do Inno) ----
 [Messages]
-brazilianportuguese.WelcomeLabel1=Bem-vindo à instalação do %1
-brazilianportuguese.WelcomeLabel2=Este assistente vai instalar o %1 (versão {#MyAppVersion}) neste computador.%n%nO MoniTec Agent é o componente cliente do projeto %2 - um software de monitoramento e controle de salas de aula para escolas públicas, desenvolvido como Trabalho de Conclusão de Curso e 100%% de código aberto.%n%nRecomendamos fechar os outros programas antes de continuar.
-brazilianportuguese.FinishedHeadingLabel=Concluindo a instalação do %1
-brazilianportuguese.FinishedLabel=A instalação do %1 foi concluída com sucesso. O serviço já está em execução em segundo plano.
+brazilianportuguese.WelcomeLabel1=Bem-vindo à instalação do MonitorEdu
+brazilianportuguese.WelcomeLabel2=Este assistente vai instalar o MonitorEdu (versão {#MyAppVersion}) neste computador.%n%nO MoniTec Agent é o componente cliente do projeto MonitorEdu - um software de monitoramento e controle de salas de aula para escolas públicas, desenvolvido como Trabalho de Conclusão de Curso e 100%% de código aberto.%n%nRecomendamos fechar os outros programas antes de continuar.
+brazilianportuguese.FinishedHeadingLabel=Concluindo a instalação do MonitorEdu
+brazilianportuguese.FinishedLabel=A instalação do MonitorEdu foi concluída com sucesso. O serviço já está em execução em segundo plano.
 brazilianportuguese.ClickFinish=Clique em Concluir para sair do instalador.
 
 [Files]
