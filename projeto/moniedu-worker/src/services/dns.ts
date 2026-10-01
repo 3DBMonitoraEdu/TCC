@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import type { AgentDnsPolicy, DnsMode, DnsPolicy } from "../types/app";
+import type { AgentDnsPolicy, DnsDashboardData, DnsMode, DnsPolicy } from "../types/app";
 
 const MAX_DOMAINS = 500;
 const MAX_DOMAIN_LENGTH = 253;
@@ -9,6 +9,7 @@ type StoredDnsPolicy = {
 	mode: DnsMode;
 	blocked_domains: string;
 	allowed_domains: string;
+	visited: string;
 };
 
 function serializeDomains(value: unknown, field: string): string {
@@ -51,6 +52,13 @@ function parsePolicyDomains(value: string): string[] {
 	return domains;
 }
 
+function parseDnsDashboardData(policy: StoredDnsPolicy): DnsDashboardData {
+	return {
+		...parseDnsPolicy(policy),
+		visited: parsePolicyDomains(policy.visited),
+	};
+}
+
 function parseDnsPolicy(policy: StoredDnsPolicy): DnsPolicy {
 	if (policy.mode !== "blocklist" && policy.mode !== "allowlist") {
 		throw new Error("O modo DNS armazenado é inválido");
@@ -80,8 +88,20 @@ async function recordDnsMetrics(agentUuid: string, visited: unknown) {
 		SELECT id, ?
 		FROM agents
 		WHERE agent_uuid = ?
-		ON CONFLICT(agent_id) DO UPDATE SET visited = excluded.visited
-		RETURNING mode, blocked_domains, allowed_domains
+		ON CONFLICT(agent_id) DO UPDATE SET
+				visited = COALESCE((
+										SELECT json_group_array(domain)
+												FROM (
+																SELECT value AS domain
+																FROM json_each(dns.visited)
+
+																UNION
+
+																SELECT value AS domain
+																FROM json_each(excluded.visited)
+															)
+									), '[]')
+				RETURNING mode, blocked_domains, allowed_domains
 	`).bind(visitedJson, agentUuid).run<StoredDnsPolicy>();
 
 	const policy = result.results[0];
@@ -111,7 +131,8 @@ async function getDnsPolicy(agentUuid: string) {
 		SELECT
 			COALESCE(d.mode, 'blocklist') AS mode,
 			COALESCE(d.blocked_domains, '[]') AS blocked_domains,
-			COALESCE(d.allowed_domains, '[]') AS allowed_domains
+			COALESCE(d.allowed_domains, '[]') AS allowed_domains,
+			COALESCE(d.visited, '[]') AS visited,
 		FROM agents a
 		LEFT JOIN dns d ON d.agent_id = a.id
 		WHERE a.agent_uuid = ?
@@ -124,7 +145,7 @@ async function getDnsPolicy(agentUuid: string) {
 	}
 
 	try {
-		return { error: false, policy: parseDnsPolicy(policy) };
+		return { error: false, policy: parseDnsDashboardData(policy) };
 	} catch (error) {
 		return {
 			error: true,

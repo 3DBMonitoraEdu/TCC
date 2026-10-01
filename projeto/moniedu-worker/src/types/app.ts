@@ -44,6 +44,10 @@ export type DnsPolicy = {
 	allowedDomains: string[];
 };
 
+export type DnsDashboardData = DnsPolicy & {
+	visited: string[];
+};
+
 export type AgentProcesses = {
 	pid: number;
 	name: string;
